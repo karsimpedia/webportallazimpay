@@ -1,0 +1,243 @@
+const IconApk = async (req, res) => {
+  console.log(req.get("Host"));
+  const host = "45.32.126.16:5000";
+  const data = {
+    menu: [
+      {
+        id: 0,
+        name: "Pulsa",
+        img: "img.jpg",
+        jenis: "elektrik",
+        filter: true,
+        idoperator: [
+          164, 32, 35, 166, 25, 68, 83, 82, 121, 128, 10, 167, 88, 142, 165,
+        ],
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/pulsa.png",
+      },
+
+      {
+        id: 1,
+        name: "Paket Data",
+        img: "img.jpg",
+        jenis: "elektrik",
+        filter: true,
+        idoperator: [
+          113, 136, 135, 160, 178, 180, 181, 182, 153, 140, 152, 93, 171, 89,
+          210, 217, 218, 211, 155, 97, 230, 146, 232, 169, 168, 106, 235, 220,
+          79, 238, 131, 125, 219, 221, 227, 203, 137, 130, 236, 223, 8, 129,
+          127, 173, 174, 175, 176, 177, 241,
+        ],
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/paket-data.png",
+      },
+      {
+        id: 2,
+        name: "PLN",
+        img: "img.jpg",
+        jenis: "spesial-pln",
+        idoperator: 37,
+        kodeproduk: "PPLN",
+        opendenom: true,
+        filter: false,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/token-pln.png",
+      },
+      {
+        id: 3,
+        name: "Game",
+        img: "img.jpg",
+        jenis: "elektrik",
+        filter: false,
+        idoperator: [
+          105, 107, 108, 147, 148, 149, 150, 77, 41, 151, 204, 205, 206, 207,
+          214,
+        ],
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/game.png",
+      },
+      {
+        id: 4,
+        name: "Tlpn & SMS",
+        img: "img.jpg",
+        jenis: "elektrik",
+        filter: true,
+        idoperator: [179, 112, 102, 115, 159],
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/telp-sms.png",
+      },
+      {
+        id: 5,
+        name: "Voucher Data",
+        img: "img.jpg",
+        jenis: "elektrik",
+        filter: true,
+        idoperator: [124, 141, 233, 240, 114, 90, 143, 216, 237, 200],
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/voucher-data.png",
+      },
+      {
+        id: 6,
+        name: "Emoney",
+        img: "img.jpg",
+        jenis: "elektrik",
+        filter: false,
+        idoperator: [
+          95, 99, 96, 163, 94, 156, 228, 116, 229, 212, 222, 234, 109, 100,
+        ],
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/e-money.png",
+      },
+      {
+        id: 8,
+        name: "Emoney Bebas",
+        img: "img.jpg",
+        jenis: "transfer-bank",
+        filter: false,
+        idoperator: 202,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/transfer-bank.png",
+      },
+      {
+        id: 9,
+        name: "Multi Finance",
+        img: "img.jpg",
+        jenis: "ppob-multiproduk",
+        idoperator: 71,
+        filter: false,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/multi-finance.png",
+      },
+      {
+        id: 10,
+        name: "PDAM",
+        img: "img.jpg",
+        jenis: "ppob-multiproduk",
+        idoperator: 74,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/pdam.png",
+      },
+      {
+        id: 11,
+        name: "BPJS",
+        img: "img.jpg",
+        jenis: "trx-ppob-singgle",
+        kodeproduk: "BPJSKS",
+        filter: false,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/bpjs-2.png",
+      },
+      {
+        id: 12,
+        name: "HP Pasca",
+        img: "img.jpg",
+        jenis: "ppob-multiproduk",
+        idoperator: 239,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/hp-pascabayar.png",
+      },
+      {
+        id: 13,
+        name: "Cek Omni",
+        img: "img.jpg",
+        jenis: "webview",
+        idoperator: 239,
+        url: "https://www.telkomsel.com/shops/channel/o2o?utm_source=wec&utm_medium=qr&utm_campaign=omni-outlet&payment=outlet",
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/pulsa.png",
+      },
+      {
+        id: 13,
+        name: "Bayar Omni",
+        img: "img.jpg",
+        jenis: "trx-ppob-singgle",
+        kodeproduk: "OMNI",
+        filter: false,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/pulsa.png",
+      },
+      {
+        id: 14,
+        name: "Indihome",
+        img: "img.jpg",
+        jenis: "trx-ppob-singgle",
+        kodeproduk: "TELKOM",
+        filter: false,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/indihome.png",
+      },
+      {
+        id: 14,
+        name: "Transfer Bank",
+        img: "img.jpg",
+        jenis: "ppob-multiproduk",
+        idoperator: 110,
+        opendenom: true,
+        filter: false,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/transfer-bank.png",
+      },
+      {
+        id: 9,
+        name: "Produksi",
+        img: "img.jpg",
+        jenis: "produksi-voucher",
+        idoperator: [154, 119, 172, 144, 145, 197, 224],
+        filter: false,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/voucher-data.png",
+      },
+    ],
+    banner: [
+      {
+        id: 0,
+        title: "Xl data Murah buktikan murahnya",
+        imgurl:
+          "https://fazz.com/id/wp-content/uploads/sites/3/2022/10/BLOG-FazzAgen_XLDANAXIS.jpg",
+      },
+      {
+        id: 1,
+        title: "Promo Paket Data indosat ",
+        imgurl:
+          "https://blog.unitedtronik.co.id/wp-content/uploads/2019/08/050819_V_FISIK_ISAT.jpg",
+      },
+      {
+        id: 2,
+        title: "Promo Ramadan by one get One",
+        imgurl:
+          "https://tri.co.id/image/files/20220308webrejekigercepmaretbahasadesk.jpg",
+      },
+    ],
+    runningteks: {
+      id: 0,
+      teks: "selamat datanga, customer serivice hanya di 085695662466",
+    },
+    menufavorit: [
+      {
+        id: 1,
+        name: "Transfer",
+        img: "img.jpg",
+        jenis: "transfer-bank",
+        filter: false,
+        idoperator: 110,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/transfer-bank.png",
+      },
+      {
+        id: 2,
+        name: "Pulsa",
+        img: "img.jpg",
+        jenis: "elektrik",
+        filter: true,
+        idoperator: [
+          164, 32, 35, 166, 25, 68, 83, 82, 121, 128, 10, 167, 88, 142, 165,
+        ],
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/pulsa.png",
+      },
+      {
+        id: 3,
+        name: "Emoney",
+        img: "img.jpg",
+        jenis: "elektrik",
+        filter: false,
+        idoperator: [95, 99, 96, 163, 94, 156, 228, 116, 229, 212],
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/e-money.png",
+      },
+      {
+        id: 4,
+        name: "Topup",
+        img: "img.jpg",
+        jenis: "topup-saldo",
+        filter: false,
+        idoperator: 110,
+        icon: "https://api.lazimpay.com:7000/assetsapk/icon/deposit.png",
+      },
+    ],
+  };
+
+  res.json(data);
+};
+
+module.exports = IconApk;
