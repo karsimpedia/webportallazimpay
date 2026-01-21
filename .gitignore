@@ -3,3 +3,6 @@
 push.sh
 update.sh
 /ssl
+
+firebase-adminsdk-*.json
+lazimpay-profesional-firebase-adminsdk-*.json
