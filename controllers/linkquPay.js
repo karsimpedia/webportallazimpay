@@ -29,6 +29,10 @@ controllers.paymentcodeRetail = async (req, res) => {
       sender: uuid,
       productCode: method,
       amount: amount,
+      identifier: uuid,
+      deviceType: "APP",
+      msisdn: "082211108088",
+      channel: "RETAIL",
     });
     //console.log(request.data);
 
@@ -36,13 +40,13 @@ controllers.paymentcodeRetail = async (req, res) => {
     const responData = {
       amount: data.amount,
       expired: data.expiresAt,
-      bank_code: data.payment.bankCode || null,
-      bank_name: data.payment.bankName || null,
+      bank_code: data.payment.bankCode ,
+      bank_name: data.payment.bankName ,
       customer_phone: data.payment.customerPhone,
       response_desc: "Virtual Account Successfully Created",
-      virtual_account: data.payment.vaNumber || null,
-      payment_code: data.payment.paymentCode || null,
-      retail_code: data.payment.store || null,
+      virtual_account: data.payment.vaNumber ,
+      payment_code: data.payment.paymentCode ,
+      retail_code: data.payment.retailName ,
     };
     return res.json({
       success: true,
@@ -102,8 +106,12 @@ controllers.virtualAccoutOnetime = async (req, res) => {
       sender: uuid,
       productCode: bankCode,
       amount: amount,
+      deviceType: "APP",
+      identifier: uuid,
+      msisdn: "082211108088",
+      channel: "va",
     });
-    //console.log(request.data);
+    console.log(request);
 
     const data = request.data;
     const responData = {
@@ -112,7 +120,7 @@ controllers.virtualAccoutOnetime = async (req, res) => {
       bank_code: data.payment.bankCode || null,
       bank_name: data.payment.bankName || null,
       customer_phone: data.payment.customerPhone,
-      response_desc: "Virtual Account Successfully Created",
+      response_desc: data.payment.message,
       virtual_account: data.payment.vaNumber || null,
       payment_code: data.payment.paymentCode || null,
       retail_code: data.payment.store || null,
@@ -132,14 +140,15 @@ controllers.TransferKodeUnik = async (req, res) => {
   var uuid = "app:" + req.body.uuid;
   var amount = parseInt(req.body.jml);
   let bankCode = req.body.code_bank;
-  var exp = moment().add(1, "days").format("YYYYMMDDhhmmss");
-  let angka_acak = Math.floor(Math.random() * 999);
+
 
   try {
     const request = await api.post("/api/trx/fund-receive", {
       sender: uuid,
       productCode: bankCode,
-      channel: "UNIQUE_CODE_BANK_LQ",
+      identifier: uuid,
+      deviceType: "APP",  
+       msisdn: "082211108088",   
       amount: amount,
     });
     //console.log(request.data);
@@ -149,13 +158,13 @@ controllers.TransferKodeUnik = async (req, res) => {
       amount: data.amount,
       bank_code: data.payment.bankCode || null,
       bank_name: data.payment.bankName || null,
-      unique_amount: 0,
-      total_amount: 100000,
+      unique_amount: data.payment.uniqueAmount,
+      total_amount: data.payment.totalAmount,
       customer_phone: data.payment.customerPhone,
       accountname: data.payment.accountName,
       accountnumber: data.payment.accountNumber,
 
-      response_desc: "Transfer Sesuai total Plus Kode unik",
+      response_desc: data.message,
     };
 
     return res.json({

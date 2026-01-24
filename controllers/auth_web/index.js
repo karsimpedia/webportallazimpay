@@ -1,21 +1,21 @@
 const utilirs = require("../utils_v9");
 const jwt = require("jsonwebtoken");
-const { v5: uuidv5 } = require("uuid");
+
 const md5 = require("md5");
 const axios = require("axios");
-const otpGenerator = require("otp-generator");
+
 var newOTP = require("otp-generators");
 const crypto = require("crypto");
-const { json } = require("body-parser");
+
 const api = require("../../lib/serverUtamaClient.js");
-const moment = require("moment");
+
 require("dotenv").config();
 
 var admin = require("firebase-admin");
-const keyFcm = require("../../lazimpay-profesional-firebase-adminsdk-3omi7-4a7e633e96.json");
-admin.initializeApp({
-  credential: admin.credential.cert(keyFcm),
-});
+// const keyFcm = require("../../lazimpay-profesional-firebase-adminsdk-3omi7-4a7e633e96.json");
+// admin.initializeApp({
+//   credential: admin.credential.cert(keyFcm),
+// });
 
 const sendPush = async (req, res) => {
   try {
@@ -25,7 +25,7 @@ const sendPush = async (req, res) => {
     var datafcm = await utilirs.runQuerySelectPromise(
       req,
       "select * from regfcm where appid=?",
-      [uuid]
+      [uuid],
     );
 
     //console.log(datafcm);
@@ -68,9 +68,16 @@ const key = process.env.SECRET; // Key for cryptograpy. Keep it secret
 function sendSMS(phone, msg) {
   async function sendotps(req, res) {
     try {
-      const send = await axios.get(
-        `http://45.32.126.16:9500/kirim-pesan?tujuan=${phone}&pesan=${msg}&key=djshdjsahdjshdjsakehyeu2y3e28ndc9832983`
-      );
+
+
+
+
+      // const send = await axios.get(
+      //   `http://45.32.126.16:9500/kirim-pesan?tujuan=${phone}&pesan=${msg}&key=djshdjsahdjshdjsakehyeu2y3e28ndc9832983`,
+      // );
+
+
+
     } catch (error) {
       console.log(error);
     }

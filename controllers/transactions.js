@@ -71,6 +71,7 @@ TransactionController.payNow = async (req, res) => {
     nominal,
   } = req.body;
 
+  console.log("req masuk", req.body)
   // ✅ PARSING TUJUAN + NOMINAL
   const { msisdn, nominal: parsedNominal } =
     parseTujuanWithNominal(tujuan, nominal);

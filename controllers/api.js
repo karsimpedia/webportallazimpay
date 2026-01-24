@@ -311,7 +311,7 @@ controllerX.tiketdeposit = async (req, res) => {
     return res.json({
       success: true,
       msg: data.payment.note,
-      jumlah: data.amount,
+      jumlah: data.amountDue,
     });
   } catch (error) {
     console.log(error);
