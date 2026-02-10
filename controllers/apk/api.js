@@ -72,7 +72,6 @@ const otpVerifyV2 = async (req, res) => {
     // sender bootstrap = nohp
     const sender = nohp.replace(/^0/, "62");
 
-    // 🔑 CALL SERVER UTAMA
     const resp = await api.post("/auth/verify-otp", {
       sender,
       nohp,

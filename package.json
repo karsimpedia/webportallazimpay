@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "start": "node src/server.js",
-    "dev" : "nodemon src/server.js"
+    "dev": "nodemon src/server.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "async": "^2.6.1",
     "axios": "^0.18.1",
     "bluebird": "^3.5.1",
@@ -57,5 +61,8 @@
     "url": "https://github.com/karsimpedia/webportalirs/issues"
   },
   "homepage": "https://github.com/karsimpedia/webportalirs#readme",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
 }

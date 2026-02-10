@@ -13,7 +13,7 @@ const LinqkuDepositUniq = async (req, res) => {
         name: "Bank BRI",
         kodebank: "BRI",
         status: "OPEN",
-        petunjuk: "Bayar Melalui BriVA BRI",
+        petunjuk: "",
       },      
       {
         id: 7,

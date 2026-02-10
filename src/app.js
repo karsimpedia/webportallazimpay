@@ -18,7 +18,7 @@ const errorHandler = require("../middlewares/errorHandler");
 const viewRoutes = require("../routes/view");
 const apiWeb = require("../routes/authWeb");
 const trxRoutes = require("../routes/api");
-
+const apk = require("../routes/apk")
 const app = express();
 
 // ================= HARDENING =================
@@ -45,7 +45,7 @@ app.set("view engine", "ejs");
 // ================= ROUTES =================
 app.use("/", viewRoutes);
 app.use("/api", apiWeb);
-
+app.use("/apk", apk);
 // 🔐 INTERNAL / H2H
 // app.use(authIrs);
 //app.use("/trx", authJwt, trxRoutes);

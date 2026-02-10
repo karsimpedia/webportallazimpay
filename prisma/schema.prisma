@@ -1,0 +1,224 @@
+// ======================================
+// GENERATOR & DATASOURCE
+// ======================================
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // bisa mysql / sqlite
+  url      = env("DATABASE_URL")
+}
+
+// ======================================
+// ENUM GLOBAL
+// ======================================
+
+enum DepositCategory {
+  BANK_TRANSFER // transfer manual
+  VIRTUAL_ACCOUNT // VA biasa
+  UNIQUE_TRANSFER // transfer unik (LinkQu)
+  EWALLET // OVO, dll
+  RETAIL // Alfamart / Indomaret
+  QRIS
+}
+
+enum DepositStatus {
+  OPEN
+  CLOSE
+}
+
+enum PaymentGateway {
+  MANUAL
+  LINKQU
+  NICEPAY
+  DUITKU
+  OY
+}
+
+enum MenuType {
+  ELEKTRIK
+  SPESIAL_PLN
+  PPOB_MULTIPRODUK
+  PPOB_SINGLE
+  TRANSFER_BANK
+  PRODUKSI_VOUCHER
+  WEBVIEW
+  TOPUP_SALDO
+}
+
+// ======================================
+// MENU APK
+// ======================================
+
+model Menu {
+  id        Int      @id @default(autoincrement())
+  name      String
+  jenis     MenuType
+  img       String?
+  icon      String
+  filter    Boolean  @default(false)
+  openDenom Boolean  @default(false)
+
+  kodeProduk String?
+  url        String?
+
+  operators MenuOperator[]
+
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Operator {
+  id   Int     @id @default(autoincrement())
+  code String  @unique // INDREG, PLN, dll
+  name String?
+
+  menus         MenuOperator[]
+  favoriteMenus FavoriteMenuOperator[]
+}
+
+model MenuOperator {
+  menuId     Int
+  operatorId Int
+
+  menu     Menu     @relation(fields: [menuId], references: [id])
+  operator Operator @relation(fields: [operatorId], references: [id])
+
+  @@id([menuId, operatorId])
+}
+
+// ======================================
+// MENU FAVORIT APK
+// ======================================
+
+model FavoriteMenu {
+  id        Int      @id @default(autoincrement())
+  name      String
+  jenis     MenuType
+  img       String?
+  icon      String
+  filter    Boolean  @default(false)
+  openDenom Boolean  @default(false)
+
+  operators FavoriteMenuOperator[]
+
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+model FavoriteMenuOperator {
+  favoriteMenuId Int
+  operatorId     Int
+
+  favoriteMenu FavoriteMenu @relation(fields: [favoriteMenuId], references: [id])
+  operator     Operator     @relation(fields: [operatorId], references: [id])
+
+  @@id([favoriteMenuId, operatorId])
+}
+
+// ======================================
+// BANNER & RUNNING TEXT
+// ======================================
+
+model Banner {
+  id     Int    @id @default(autoincrement())
+  title  String
+  imgUrl String
+
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+model RunningText {
+  id   Int    @id @default(autoincrement())
+  text String
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// ======================================
+// CONTACT APK
+// ======================================
+
+model ContactApk {
+  id Int @id @default(autoincrement())
+
+  whatsapp  String?
+  telegram  String?
+  email     String?
+  instagram String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ======================================
+// DEPOSIT METHOD (MASTER)
+// ======================================
+
+model DepositMethod {
+  id Int @id @default(autoincrement())
+
+  name     String // Transfer Bank, VA, OVO
+  code     String          @unique // deposit-via-bank
+  category DepositCategory
+  gateway  PaymentGateway
+
+  description String?
+  icon        String
+
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  banks DepositBank[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ======================================
+// DEPOSIT BANK (VA + LINKQU + DLL)
+// ======================================
+
+model DepositBank {
+  id Int @id @default(autoincrement())
+
+  methodId Int
+  method   DepositMethod @relation(fields: [methodId], references: [id])
+
+  name     String // Bank BRI
+  bankCode String // VABRI / BRI / TIKETBCA
+  status   DepositStatus @default(OPEN)
+
+  instruction String?
+
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([methodId, bankCode])
+}
+
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String   // hash
+  role      String   @default("ADMIN") // ADMIN | SUPERADMIN
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+}
