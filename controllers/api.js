@@ -32,6 +32,7 @@ controllerX.gantiKodeReferral = async (req, res) => {
       msg: "Kode Referral Berhasil diubah",
     });
   } catch (err) {
+    console.log(err);
     console.error("webportal ganti kode referral error:", err.message);
 
     // mapping error umum
@@ -116,13 +117,14 @@ controllerX.cekidtokenpln = async (req, res) => {
       jsonData,
     );
 
+ 
     return res.json({
       success: true,
       data: resp.data.data,
       // msg: "akun tidak ditemukan",
     });
   } catch (error) {
-    //console.log(error);
+    console.log(error.data);
     res.json({ success: false, msg: "error" });
     //res.json({ success: false, msg: "bisa langsung hit aja" });
   }
@@ -468,11 +470,21 @@ controllerX.historitrx = async (req, res) => {
         cari: req.query.cari || "",
       },
       headers: {
-        "x-sender": uuid, // atau auth internal kamu
+        "x-sender": uuid,
       },
     });
 
-    return res.json(apiRes.data);
+    const data = apiRes.data;
+
+    // pastikan data berupa array
+    if (Array.isArray(data.data)) {
+      data.data = data.data.map((item) => ({
+        ...item,
+        status: item.statustext, // 👈 tambahan
+      }));
+    }
+console.log( data)
+    return res.json(data);
   } catch (error) {
     console.error("proxy historiTrx:", error?.response?.data || error);
     return res.json({
@@ -535,7 +547,7 @@ controllerX.historisaldo = async (req, res) => {
 };
 
 controllerX.getmenuppob = async (req, res) => {
-    return res.json({ success: false, msg: "terjadi kesalahan" });
+  return res.json({ success: false, msg: "terjadi kesalahan" });
   try {
     let menux = await utilirs.runQuerySelectPromise(
       req,
@@ -546,8 +558,7 @@ controllerX.getmenuppob = async (req, res) => {
 };
 
 controllerX.getmenuppob_old = async (req, res) => {
-
-    return res.json({ success: false, msg: "terjadi kesalahan" });
+  return res.json({ success: false, msg: "terjadi kesalahan" });
   /*
     {
         id: 1,
@@ -697,8 +708,6 @@ controllerX.getmenuppob_old = async (req, res) => {
 };
 
 controllerX.getva = async (req, res) => {
-
-
   var uuid = "app:" + req.query.uuid;
   return res.json({ success: false, msg: "terjadi kesalahan" });
   var cekdata = await utilirs.runQuerySelectPromise(
@@ -761,8 +770,7 @@ controllerX.cekdevice = async (req, res) => {
 };
 
 controllerX.CekEsisting = async (req, res) => {
-
-    return res.json({ success: false, msg: "terjadi kesalahan" });
+  return res.json({ success: false, msg: "terjadi kesalahan" });
   try {
     var cekUser = await utilirs.runQuerySelectPromise(
       req,
@@ -781,13 +789,12 @@ controllerX.CekEsisting = async (req, res) => {
 };
 
 controllerX.accountKit = async (req, res) => {
-
   var uuid = "app:" + req.body.uuid;
   var phone = req.body.phone;
   var pin = req.body.pin;
   var idreseller;
 
-    return res.json({ success: false, msg: "terjadi kesalahan" });
+  return res.json({ success: false, msg: "terjadi kesalahan" });
   // console.log(req.body);
   try {
     pin = utilirs.deryptaes256(pin.trim());
@@ -913,7 +920,7 @@ controllerX.getme = async (req, res) => {
         idreseller: ada.data.reseller.id,
 
         nama: ada.data.reseller.name,
-        saldo: ada.data.saldo,
+        saldo: ada.data.saldo.amount,
         poin: ada.data.points.balance,
         komisi: ada.data.commission.balance,
         jmldownline: ada.data.downline.total,

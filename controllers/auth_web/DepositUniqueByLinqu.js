@@ -47,7 +47,7 @@ const LinqkuDepositUniq = async (req, res) => {
       {
         id: 12,
         name: "BANK BCA",
-        kodebank: "BCA",
+        kodebank: "TIKETBCA",
         status: "OPEN",
         petunjuk: "",
       },

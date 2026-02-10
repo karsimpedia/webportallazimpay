@@ -80,6 +80,7 @@ ProductControllers.getOperatorFIlterByTujuan = async (req, res) => {
     // =================================================
     // Legacy response wrapper (PENTING)
     // =================================================
+  
     return res.json({
       success: true,
       data: request.data,
@@ -314,6 +315,8 @@ ProductControllers.getProductByOperator = async (req, res) => {
     // =================================================
     // Legacy response (WAJIB SAMA)
     // =================================================
+
+    console.log( request.data )
     return res.json({
       success: true,
       data: request.data,

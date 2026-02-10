@@ -1,39 +1,73 @@
 "use strict";
 const TransactionController = {};
 let api = require("../lib/serverUtamaClient.js");
+function rupiah(value) {
+  const n = Number(value || 0);
+  return "Rp " + n.toLocaleString("id-ID");
+}
+
+function col(label, value, width = 12) {
+  return label.padEnd(width, " ") + ": " + value;
+}
 
 function mapStatusToLegacy(data = {}) {
   const status = String(data.status || "").toUpperCase();
 
+  const name = data.customerName ?? data.extra?.customerNo ?? "";
+
+  const tagihan = data.amountDue ?? 0;
+  const admin = data.adminFee ?? 0;
+  const totalTag = data.sellingPrice ?? 0;
+  const harga = data.sellPrice ?? 0;
+  const dest = data.msisdn ?? "";
+  const typeTrx = data.type;
+  let msg = data.message || data.msg || "";
+
+  if (
+    ["TAGIHAN_INQUIRY", "EWALLET_INQUIRY", "TRANSFER_BANK_INQUIRY"].includes(
+      typeTrx,
+    )
+  ) {
+    msg = [
+      col("Id Number", dest),
+      col("Customer", name),
+      col("Tagihan", rupiah(tagihan)),
+      col("Admin", rupiah(admin)),
+      col("Total", rupiah(totalTag)),
+      col("Harga", rupiah(harga)),
+    ].join("\n");
+  }
+
   if (status === "SUCCESS") {
     return {
       success: true,
-      rc: "1",
+      rc: data.rc || "1",
+      idtransaksi: data.trxId,
       sn: data.serial || data.sn || data.supplierRef || data.ref,
-      msg: data.msg || data.message || "Transaksi berhasil",
+      msg: msg || "Transaksi berhasil",
     };
   }
 
   if (status === "FAILED") {
     return {
       success: false,
-      rc: "2",
-      msg: data.msg || data.message || "Transaksi gagal",
+      rc: data.rc || "2",
+      msg: msg || "Transaksi gagal",
     };
   }
 
   if (["PENDING", "WAITING", "PROCESSING"].includes(status)) {
     return {
       success: true,
-      rc: "0068",
-      msg: data.msg || data.message || "Transaksi sedang diproses",
+      rc: data.rc || "0068",
+      msg: msg || "Transaksi sedang diproses",
     };
   }
 
   return {
     success: false,
-    rc: "99",
-    msg: data.msg || data.message || "Status tidak dikenal",
+    rc: data.rc || "99",
+    msg: msg || "Status tidak dikenal",
   };
 }
 
@@ -71,10 +105,11 @@ TransactionController.payNow = async (req, res) => {
     nominal,
   } = req.body;
 
-  console.log("req masuk", req.body)
   // ✅ PARSING TUJUAN + NOMINAL
-  const { msisdn, nominal: parsedNominal } =
-    parseTujuanWithNominal(tujuan, nominal);
+  const { msisdn, nominal: parsedNominal } = parseTujuanWithNominal(
+    tujuan,
+    nominal,
+  );
 
   if (!msisdn) {
     return res.json({
@@ -91,7 +126,7 @@ TransactionController.payNow = async (req, res) => {
     const response = await api.post("/api/trx/apk", {
       sender: furl,
       productCode: kodeproduk,
-      tujuan: msisdn,      // ⬅️ tujuan bersih
+      tujuan: msisdn, // ⬅️ tujuan bersih
       idtrx,
       pin,
       forcetrx,
@@ -102,7 +137,7 @@ TransactionController.payNow = async (req, res) => {
 
     const data = response?.data || {};
     const legacy = mapStatusToLegacy(data);
-
+    console.log("tes", data);
     return res.json({
       ...legacy,
       produk: kodeproduk,

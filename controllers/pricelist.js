@@ -1,17 +1,12 @@
-
 "use strict";
 const controllerX = {};
-var utilirs = require('./utils_v9');
-const moment = require('moment');
-const md5 = require('md5');
-const S = require('string');
-const pad = require('utils-pad-string');
+var utilirs = require("./utils_v9");
+const moment = require("moment");
+const md5 = require("md5");
+const S = require("string");
+const pad = require("utils-pad-string");
 const ProductControllers = require("./product");
-const api = require("../lib/serverUtamaClient")
-
-
-
-
+const api = require("../lib/serverUtamaClient");
 
 controllerX.pricelist = async (req, res) => {
   const uuid = "app:" + req.body.uuid;
@@ -60,6 +55,5 @@ controllerX.pricelistgroup = async (req, res) => {
     });
   }
 };
-
 
 module.exports = controllerX;
