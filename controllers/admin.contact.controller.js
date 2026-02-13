@@ -16,7 +16,59 @@ exports.createContactApk = async (req, res) => {
 };
 
 
+exports.getContactApk = async (req, res) => {
+  try {
+    const contacts = await prisma.contactApk.findMany({
+      orderBy: { createdAt: "desc" },
+    });
 
+    res.json({
+      success: true,
+      contacts,
+    });
+  } catch (err) {
+    console.error("[getContactApk]", err);
+    res.status(500).json({
+      success: false,
+      error: "get contact gagal",
+    });
+  }
+};
+
+exports.getContactApkById = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "id tidak valid",
+      });
+    }
+
+    const contact = await prisma.contactApk.findUnique({
+      where: { id },
+    });
+
+    if (!contact) {
+      return res.status(404).json({
+        success: false,
+        error: "Contact tidak ditemukan",
+      });
+    }
+
+    res.json({
+      success: true,
+      contact,
+    });
+  } catch (err) {
+    console.error("[getContactApkById]", err);
+    res.status(500).json({
+      success: false,
+      error: "get contact by id gagal",
+    });
+  }
+};
 
 // UPDATE CONTACT
 exports.updateContactApk = async (req, res) => {

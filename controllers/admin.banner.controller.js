@@ -1,5 +1,59 @@
 const prisma = require("../lib/prisma");
 
+exports.getBanner = async (req, res) => {
+  try {
+    const banners = await prisma.banner.findMany({
+      orderBy: {
+        sortOrder: "asc",
+      },
+      select: {
+        id: true,
+        title: true,
+        imgUrl: true,
+        sortOrder: true,
+        isActive: true,
+      },
+    });
+
+    return res.json({
+      success: true,
+      banner: banners,
+    });
+  } catch (err) {
+    console.error("[getBanner]", err);
+    return res.status(500).json({
+      success: false,
+      error: "gagal ambil banner",
+    });
+  }
+};
+
+exports.getBannerByid = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "ID tidak valid" });
+    }
+
+    const banners = await prisma.banner.findUnique({
+      where: { id },
+      
+      
+    });
+
+    return res.json({
+      success: true,
+      banner: banners,
+    });
+  } catch (err) {
+    console.error("[getBanner]", err);
+    return res.status(500).json({
+      success: false,
+      error: "gagal ambil banner",
+    });
+  }
+};
+
 exports.createBanner = async (req, res) => {
   try {
     const { title, imgUrl, sortOrder = 0 } = req.body;
@@ -18,10 +72,6 @@ exports.createBanner = async (req, res) => {
     res.status(500).json({ error: "create banner gagal" });
   }
 };
-
-
-
-
 
 // UPDATE BANNER
 exports.updateBanner = async (req, res) => {
@@ -52,4 +102,3 @@ exports.deleteBanner = async (req, res) => {
     res.status(500).json({ error: "delete banner gagal" });
   }
 };
-

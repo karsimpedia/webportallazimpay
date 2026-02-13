@@ -39,11 +39,11 @@ enum PaymentGateway {
 enum MenuType {
   ELEKTRIK
   SPESIAL_PLN
-  PPOB_MULTIPRODUK
-  PPOB_SINGLE
   TRANSFER_BANK
-  PRODUKSI_VOUCHER
+  PPOB_MULTIPRODUK
+  TRX_PPOB_SINGLE  
   WEBVIEW
+  PRODUKSI_VOUCHER
   TOPUP_SALDO
 }
 
@@ -103,7 +103,8 @@ model FavoriteMenu {
   icon      String
   filter    Boolean  @default(false)
   openDenom Boolean  @default(false)
-
+  kodeProduk String?
+  url        String?
   operators FavoriteMenuOperator[]
 
   isActive  Boolean @default(true)
@@ -112,15 +113,20 @@ model FavoriteMenu {
   createdAt DateTime @default(now())
 }
 
+
+
 model FavoriteMenuOperator {
   favoriteMenuId Int
   operatorId     Int
 
-  favoriteMenu FavoriteMenu @relation(fields: [favoriteMenuId], references: [id])
-  operator     Operator     @relation(fields: [operatorId], references: [id])
+  favoriteMenu   FavoriteMenu    @relation(fields: [favoriteMenuId], references: [id], onDelete: Cascade)
+
+  operator       Operator    @relation(fields: [operatorId], references: [id], onDelete: Cascade)
 
   @@id([favoriteMenuId, operatorId])
 }
+
+
 
 // ======================================
 // BANNER & RUNNING TEXT

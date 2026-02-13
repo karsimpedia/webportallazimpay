@@ -23,7 +23,7 @@ controllers.paymentcodeRetail = async (req, res) => {
   let uuid = "app:" + req.body.uuid;
   let amount = parseInt(req.body.jml);
   let method = req.body.method;
-
+console.log(req.body)
   try {
     var request = await api.post("/api/trx/fund-receive", {
       sender: uuid,
@@ -34,7 +34,7 @@ controllers.paymentcodeRetail = async (req, res) => {
       msisdn: "082211108088",
       channel: "RETAIL",
     });
-    // console.log(request.data);
+    console.log(request.data);
 const admin = 0
     const data = request.data;
     const responData = {

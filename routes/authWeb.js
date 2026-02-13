@@ -7,6 +7,8 @@ let ceknomor = require("../controllers/cekNomohp");
 const DepositBank = require("../controllers/auth_web/DepositBank");
 let VaBankReady = require("../controllers/auth_web/VaBankReady");
 let LinqkuDepositUniq = require("../controllers/auth_web/DepositUniqueByLinqu");
+const { getDepositOptions, getDepositByCategory} = require("../controllers/apk/deposit.controller.js");
+const getHomeApk = require("../controllers/apk/home.controller.js");
 const {
     sendPush,
     loginByPhone,
@@ -36,11 +38,17 @@ router.post("/newsession", LoginNewSession);
 router.post("/forgotpin", forgotPinRec);
 router.post("/forgototpverify", forgotPinVerifyOtp);
 router.post("/ubahpin", forgotPinFinal);
-router.post("/assetsapk", iconApk);
+// router.post("/assetsapk", iconApk);
+router.post("/assetsapk", getHomeApk );
+
 router.post("/kontact", ContackApk);
-router.post("/listdeposit", DepositBank);
-router.post("/va-bank", VaBankReady);
-router.post("/deposit-kode-unik-bank-linkqu", LinqkuDepositUniq);
+//router.post("/listdeposit", DepositBank);
+router.post("/listdeposit", getDepositOptions);
+//router.post("/va-bank", VaBankReady);
+// router.get("/deposit/va/:category?", deposit.getDepositByCategory());
+
+router.post("/va-bank", getDepositByCategory("VIRTUAL_ACCOUNT"));
+router.post("/deposit-kode-unik-bank-linkqu", getDepositByCategory("UNIQUE_TRANSFER")); 
 router.post("/register", RegisterUSer);
 router.post("/callback-linkqu", callBackLinqu);
 //router.get("/sendpush", sendPush);

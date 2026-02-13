@@ -25,8 +25,10 @@ const prisma = require("../../lib/prisma.js")
       opendenom: m.openDenom,
       kodeproduk: m.kodeProduk,
       url: m.url,
+      isActive: m.isActive,
       idoperator: m.operators.map((o) => o.operator.code),
       icon: m.icon,
+      sortOrder: m.sortOrder
     }));
 
     res.json({ menu: data });

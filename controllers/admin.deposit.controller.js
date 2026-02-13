@@ -1,5 +1,70 @@
 const prisma = require("../lib/prisma");
 
+
+exports.getDepositMethod = async (req, res) => {
+  try {
+    const methods = await prisma.depositMethod.findMany({
+      orderBy: { sortOrder: "asc" },
+      include: {
+        banks: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      methods,
+    });
+  } catch (err) {
+    console.error("[getDepositMethod]", err);
+    res.status(500).json({
+      success: false,
+      error: "get deposit method gagal",
+    });
+  }
+};
+
+exports.getDepositMethodById = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "id tidak valid",
+      });
+    }
+
+    const method = await prisma.depositMethod.findUnique({
+      where: { id },
+      include: {
+        banks: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+    });
+
+    if (!method) {
+      return res.status(404).json({
+        success: false,
+        error: "Deposit method tidak ditemukan",
+      });
+    }
+
+    res.json({
+      success: true,
+      method,
+    });
+  } catch (err) {
+    console.error("[getDepositMethodById]", err);
+    res.status(500).json({
+      success: false,
+      error: "get deposit method by id gagal",
+    });
+  }
+};
+
 exports.createDepositMethod = async (req, res) => {
   try {
     const {
