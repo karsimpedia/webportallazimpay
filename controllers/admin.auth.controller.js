@@ -16,7 +16,7 @@ function generateToken(admin) {
       role: admin.role,
     },
     JWT_SECRET,
-    { expiresIn: JWT_EXPIRES }
+    { expiresIn: JWT_EXPIRES },
   );
 }
 
@@ -46,9 +46,11 @@ exports.login = async (req, res) => {
 
     res.cookie("admin_token", token, {
       httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production", // WAJIB true di HTTPS
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000,
+      domain: process.env.DOMAIN,
+      path: "/",
     });
 
     res.json({
@@ -69,7 +71,14 @@ exports.login = async (req, res) => {
    LOGOUT
 ===================================================== */
 exports.logout = async (req, res) => {
-  res.clearCookie("admin_token");
+res.clearCookie("admin_token", {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  domain: process.env.DOMAIN,
+  path: "/",
+});
+
   res.json({ success: true });
 };
 
