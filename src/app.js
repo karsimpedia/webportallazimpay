@@ -51,8 +51,8 @@ app.use("/apk", apk);
 app.use("/admin", admin);
 // 🔐 INTERNAL / H2H
 // app.use(authIrs);
-//app.use("/trx", authJwt, trxRoutes);
-app.use("/trx",  trxRoutes); // testing no uth
+app.use("/trx", authJwt, trxRoutes);
+// app.use("/trx",  trxRoutes); // testing no uth
 // ================= ERROR =================
 app.use(notFound);
 app.use(errorHandler);

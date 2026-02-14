@@ -10,8 +10,35 @@ const running = require("../controllers/admin.runningtext.controller");
 const favoritMenu = require("../controllers/admin.favoriteMenu.controller");
 const auth = require("../controllers/admin.auth.controller");
 
+const ctrl = require("../controllers/receiptTemplate.controller");
+const { verifyAdmin, requireSuperAdmin } = require("../middlewares/adminAuth");
+
+//admin auth
 router.post("/login", auth.login);
 router.post("/logout", auth.logout);
+router.get("/me", verifyAdmin, auth.me);
+router.post("/", verifyAdmin, requireSuperAdmin, auth.create);
+router.post("/change-password", verifyAdmin, auth.changePassword);
+router.patch("/:id/toggle", verifyAdmin, requireSuperAdmin, auth.toggleActive);
+
+router.get("/receipt/:trxId",  ctrl.getReceiptByTransaction);
+router.post("/receipt",  ctrl.getReceiptByTransaction);
+
+
+router.use(verifyAdmin);
+
+// ===== Template CRUD =====
+router.get("/receipt-template", ctrl.listTemplates);
+router.post("/receipt-template", verifyAdmin, ctrl.createTemplate);
+router.get("/receipt-template/:id", ctrl.getTemplateById);
+router.put("/receipt-template/:id", verifyAdmin, ctrl.updateTemplate);
+router.delete("/receipt-template/:id", verifyAdmin, ctrl.deleteTemplate);
+
+// preview render manual (untuk editor template di dashboard)
+router.post("/receipt-template/:id/preview", verifyAdmin, ctrl.previewTemplate);
+
+// ===== Receipt dari transaksi =====
+
 
 // MENU
 
@@ -26,7 +53,6 @@ router.get("/favorite-menu/:id", favoritMenu.getFavoriteMenuById);
 router.delete("/favorite-menu/:id", favoritMenu.deleteFavoriteMenu);
 router.put("/favorite-menu/:id", favoritMenu.updateFavoriteMenu);
 router.post("/favorite-menu", favoritMenu.createFavoriteMenu);
-
 
 // DEPOSIT
 router.put("/deposit/method/:id", deposit.updateDepositMethod);
@@ -55,7 +81,6 @@ router.get("/contact/:id", contact.getContactApkById);
 router.delete("/contact/:id", contact.deleteContactApk);
 router.post("/contact", contact.createContactApk);
 router.get("/contact", contact.getContactApk);
-
 
 // RUNNING TEXT
 router.put("/running-text/:id", running.updateRunningText);

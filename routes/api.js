@@ -16,7 +16,8 @@ var ProductControllers = require("../controllers/product");
 let cetaknew = require("../controllers/controllerscetak");
 var avianaPay = require("../controllers/avianaPay");
 var VoucherFisikControllers = require("../controllers/voucherfisik");
-
+const ctrl = require("../controllers/receiptTemplate.controller");
+router.post("/receipt",  ctrl.getReceiptByTransaction);
 // router.get("/hadiah", Hadiah.listhadiah);
 // router.get("/hadiah/reward", Hadiah.getRewards);
 // router.post("/hadiah/redeem", Hadiah.redeemNow);
@@ -102,7 +103,7 @@ router.post("/regtoken", api.regtoken);
 
 router.post("/cekidtokenpln", api.cekidtokenpln);
 
-router.post("/cetak", cetakBaru );
+router.post("/cetak", ctrl.getReceiptByTransaction );
 //router.post("/cetak", cetaknew.cetakNew);
 router.post("/gantikodereferral", api.gantiKodeReferral);
 // router.post("/getnotif", api.Notification);

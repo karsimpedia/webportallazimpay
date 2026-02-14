@@ -70,30 +70,50 @@ controllerX.getinfo = async (req, res) => {
     res.json({ success: false, msg: "error" });
   }
 };
-
 controllerX.regtoken = async (req, res) => {
-  var appid = "app:" + req.body.uuid;
-  var token = req.body.regid;
-
   try {
-    let datainsert = {
-      regtoken: token,
-      appid: appid,
-    };
-    var x = await utilirs.runQuerySelectPromise(
-      req,
-      "insert into regfcm set ? ON DUPLICATE KEY UPDATE regtoken=?",
-      [datainsert, token],
-    );
+    const { uuid, regid, deviceId, platform = "android" } = req.body;
+
+    if (!uuid || !regid || !deviceId) {
+      return res.json({
+        success: false,
+        msg: "uuid, regid, deviceId wajib diisi",
+      });
+    }
+
+    const appid = "app:" + uuid;
+
+    // Upsert berdasarkan appid + deviceId
+    const device = await prisma.fcmDevice.upsert({
+      where: {
+        appid_deviceId: {
+          appid,
+          deviceId,
+        },
+      },
+      update: {
+        regtoken: regid,
+        platform,
+      },
+      create: {
+        appid,
+        deviceId,
+        regtoken: regid,
+        platform,
+      },
+    });
 
     res.json({
       success: true,
-      msg: "token registration successfully",
-      tokenFcm: token,
+      msg: "Token registered",
+      device,
     });
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, msg: "error register" });
+    console.error("REGTOKEN ERROR:", error);
+    res.json({
+      success: false,
+      msg: "error register",
+    });
   }
 };
 
@@ -117,7 +137,6 @@ controllerX.cekidtokenpln = async (req, res) => {
       jsonData,
     );
 
- 
     return res.json({
       success: true,
       data: resp.data.data,
@@ -483,7 +502,7 @@ controllerX.historitrx = async (req, res) => {
         status: item.statustext, // 👈 tambahan
       }));
     }
-console.log( data)
+    console.log(data);
     return res.json(data);
   } catch (error) {
     console.error("proxy historiTrx:", error?.response?.data || error);

@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET || "secret_admin";
 
-module.exports = function adminAuth(req, res, next) {
+exports.adminAuth = (req, res, next) => {
   const token = req.cookies.admin_token;
   if (!token) return res.status(401).json({ error: "Unauthorized" });
 
@@ -12,4 +12,30 @@ module.exports = function adminAuth(req, res, next) {
   } catch {
     return res.status(401).json({ error: "Invalid token" });
   }
+};
+
+exports.verifyAdmin = (req, res, next) => {
+  try {
+    const token =
+      req.cookies.admin_token ||
+      req.headers.authorization?.replace("Bearer ", "");
+
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.admin = decoded;
+
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Token tidak valid" });
+  }
+};
+
+exports.requireSuperAdmin = (req, res, next) => {
+  if (req.admin.role !== "SUPERADMIN") {
+    return res.status(403).json({ error: "Akses ditolak" });
+  }
+  next();
 };

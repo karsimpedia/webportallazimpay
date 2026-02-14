@@ -228,3 +228,29 @@ model Admin {
 
   createdAt DateTime @default(now())
 }
+
+
+model ReceiptTemplate {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique // contoh: "PLN", "PDAM", "PULSA", dst
+  title       String
+  description String?
+  template    String   @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+
+model FcmDevice {
+  id        Int      @id @default(autoincrement())
+  appid     String
+  deviceId  String   // unique per device
+  regtoken  String
+  platform  String?  // android / ios
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([appid, deviceId])
+}

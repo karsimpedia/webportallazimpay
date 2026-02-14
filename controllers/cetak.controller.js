@@ -1,6 +1,9 @@
 // webportal/controllers/cetak.controller.js
 
 const api = require("../lib/serverUtamaClient");
+
+
+
 const cetak = async function cetakStruk(req, res) {
   try {
     const { idtrx, jasaloket = 0 } = req.body;
@@ -10,7 +13,7 @@ const cetak = async function cetakStruk(req, res) {
       params: { jasaloket, sender :"082211108088" },
       
     });
-console.log (response)
+
     return res.json(response.data);
   } catch (err) {
     console.log (err)
