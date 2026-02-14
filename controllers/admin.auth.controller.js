@@ -5,6 +5,23 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET || "secret_admin";
 const JWT_EXPIRES = "1d";
 const SALT_ROUNDS = 10;
+function getCookieOptions() {
+  const isProd = process.env.NODE_ENV === "production";
+
+  const options = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    maxAge: 24 * 60 * 60 * 1000,
+    path: "/",
+  };
+
+  if (isProd && process.env.DOMAIN) {
+    options.domain = process.env.DOMAIN;
+  }
+
+  return options;
+}
 
 /* =====================================================
    HELPER: GENERATE TOKEN
@@ -44,14 +61,7 @@ exports.login = async (req, res) => {
 
     const token = generateToken(admin);
 
-    res.cookie("admin_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // WAJIB true di HTTPS
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-      domain: process.env.DOMAIN,
-      path: "/",
-    });
+    res.cookie("admin_token", token, getCookieOptions());
 
     res.json({
       success: true,
@@ -71,13 +81,9 @@ exports.login = async (req, res) => {
    LOGOUT
 ===================================================== */
 exports.logout = async (req, res) => {
-res.clearCookie("admin_token", {
-  httpOnly: true,
-  secure: true,
-  sameSite: "none",
-  domain: process.env.DOMAIN,
-  path: "/",
-});
+
+  console.log("logout")
+  res.clearCookie("admin_token", getCookieOptions());
 
   res.json({ success: true });
 };
