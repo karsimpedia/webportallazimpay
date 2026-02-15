@@ -18,6 +18,7 @@ module.exports = {
       env_production: {
         NODE_ENV: "production",
         PORT: 3005,
+        CORS_ORIGIN: "https://console.lazimpay.com",
       },
 
       // ===== AUTO RESTART =====
