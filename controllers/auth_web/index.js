@@ -1,6 +1,6 @@
 const utilirs = require("../utils_v9");
 const jwt = require("jsonwebtoken");
-
+const prisma = require("../../lib/prisma.js");
 const md5 = require("md5");
 const axios = require("axios");
 
@@ -12,56 +12,70 @@ const api = require("../../lib/serverUtamaClient.js");
 require("dotenv").config();
 
 var admin = require("firebase-admin");
-// const keyFcm = require("../../lazimpay-profesional-firebase-adminsdk-3omi7-4a7e633e96.json");
-// admin.initializeApp({
-//   credential: admin.credential.cert(keyFcm),
-// });
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(require("../../firebase-key.json")),
+  });
+}
 
 const sendPush = async (req, res) => {
   try {
-    const uuid = req.query.uuid;
-    const title = req.query.title;
-    const pesan = req.query.pesan;
-    var datafcm = await utilirs.runQuerySelectPromise(
-      req,
-      "select * from regfcm where appid=?",
-      [uuid],
-    );
+    const { uuid, title, pesan } = req.query;
 
-    //console.log(datafcm);
+    if (!uuid || !title || !pesan) {
+      return res.status(400).json({
+        success: false,
+        msg: "uuid, title dan pesan wajib diisi",
+      });
+    }
 
-    let token = datafcm[0].regtoken;
-    // let serverkey = datafcm[0].serverkey;
-    // var fcm = new FCM(serverkey);
+    // Ambil device berdasarkan appid
+    const devices = await prisma.fcmDevice.findMany({
+      where: {
+        appid: uuid,
+      },
+      select: {
+        regtoken: true,
+      },
+    });
+
+    console.log(devices)
+    if (!devices.length) {
+      return res.status(404).json({
+        success: false,
+        msg: "Device tidak ditemukan",
+      });
+    }
+
+    // Kirim ke semua device user tsb
+    const tokens = devices.map((d) => d.regtoken);
 
     const message = {
       notification: {
+        title,
         body: pesan,
-        title: title,
       },
-
-      token: token,
+      tokens, // multiple send
     };
 
-    // Send a message to the device corresponding to the provided
-    // registration token.
-    admin
-      .messaging()
-      .send(message)
-      .then((response) => {
-        res.json({ success: true, msg: "Successfully sent message" });
-        // Response is a message ID string.
-        console.log("Successfully sent message:", response);
-      })
-      .catch((error) => {
-        res.status(401).json({ success: false, msg: "Error sending message" });
-        console.log("Error sending message:", error);
-      });
+    const response = await admin.messaging().sendEachForMulticast(message);
+
+    console.log("Push success:", response.successCount);
+
+    return res.json({
+      success: true,
+      sent: response.successCount,
+      failed: response.failureCount,
+    });
   } catch (error) {
-    res.status(401).json({ success: false, msg: "Error sending message" });
-    // console.log(error);
+    console.error("FCM error:", error);
+    return res.status(500).json({
+      success: false,
+      msg: "Error sending message",
+    });
   }
 };
+
 
 const key = process.env.SECRET; // Key for cryptograpy. Keep it secret
 
@@ -72,9 +86,9 @@ function sendSMS(phone, msg) {
 
 
 
-      // const send = await axios.get(
-      //   `http://45.32.126.16:9500/kirim-pesan?tujuan=${phone}&pesan=${msg}&key=djshdjsahdjshdjsakehyeu2y3e28ndc9832983`,
-      // );
+      const send = await axios.get(
+        `http://45.32.126.16:9500/kirim-pesan?tujuan=${phone}&pesan=${msg}&key=djshdjsahdjshdjsakehyeu2y3e28ndc9832983`,
+      );
 
 
 

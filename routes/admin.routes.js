@@ -21,23 +21,19 @@ router.post("/", verifyAdmin, requireSuperAdmin, auth.create);
 router.post("/change-password", verifyAdmin, auth.changePassword);
 router.patch("/:id/toggle", verifyAdmin, requireSuperAdmin, auth.toggleActive);
 
-router.get("/receipt/:trxId",  ctrl.getReceiptByTransaction);
-router.post("/receipt",  ctrl.getReceiptByTransaction);
-
+router.get("/receipt/:trxId", ctrl.getReceiptByTransaction);
+router.post("/receipt", ctrl.getReceiptByTransaction);
 
 router.use(verifyAdmin);
 
 // ===== Template CRUD =====
 router.get("/receipt-template", ctrl.listTemplates);
-router.post("/receipt-template", verifyAdmin, ctrl.createTemplate);
+router.post("/receipt-template", ctrl.createTemplate);
 router.get("/receipt-template/:id", ctrl.getTemplateById);
-router.put("/receipt-template/:id", verifyAdmin, ctrl.updateTemplate);
-router.delete("/receipt-template/:id", verifyAdmin, ctrl.deleteTemplate);
+router.put("/receipt-template/:id", ctrl.updateTemplate);
+router.delete("/receipt-template/:id", ctrl.deleteTemplate);
+router.post("/receipt-template/:id/preview", ctrl.previewTemplate);
 
-// preview render manual (untuk editor template di dashboard)
-router.post("/receipt-template/:id/preview", verifyAdmin, ctrl.previewTemplate);
-
-// ===== Receipt dari transaksi =====
 
 
 // MENU

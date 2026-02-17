@@ -41,11 +41,12 @@ exports.getDepositByCategory = (defaultOption = null) => {
   return async (req, res) => {
     try {
       const category =
-        req.params.category ||
-        req.query.category ||
-        req.body.category ||
+        req.params?.category ??
+        req.query?.category ??
+        req.body?.category ??
         defaultOption;
 
+      console.log("kate", category);
       if (!category) {
         return res.status(400).json({
           error: "Category is required",

@@ -11,8 +11,8 @@ const router = express.Router();
 
 router.get("/menu", getMenuApk);
 router.get("/contact", getContactApk);
-router.get("/deposit", getDepositOptions);
-router.get("/deposit/:category", getDepositByCategory);
+// router.get("/deposit", getDepositOptions);
+router.get("/deposit", getDepositByCategory("VIRTUAL_ACCOUNT"));
 router.get("/home", getHomeApk);
 // APK
 router.get("/menu-favorit", getFavoriteMenu);

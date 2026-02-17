@@ -146,7 +146,7 @@ TransactionController.payNow = async (req, res) => {
       confirm: data.confirm || undefined,
     });
   } catch (error) {
-    console.error("webportal payNow error:", error?.response?.data || error);
+    console.error("webportal payNow error:", error?.response || error);
 
     return res.json({
       success: false,
@@ -154,7 +154,7 @@ TransactionController.payNow = async (req, res) => {
       tujuan: msisdn,
       reffid: idtrx,
       rc: "99",
-      msg: "Gagal menghubungi server utama",
+      msg: error?.response?.data?.error || "Gagal menghubungi server utama",
     });
   }
 };

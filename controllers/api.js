@@ -71,6 +71,9 @@ controllerX.getinfo = async (req, res) => {
   }
 };
 controllerX.regtoken = async (req, res) => {
+
+
+  console.log( req.body)
   try {
     const { uuid, regid, deviceId, platform = "android" } = req.body;
 

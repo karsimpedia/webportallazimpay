@@ -99,7 +99,7 @@ router.post("/gantipin", api.gantipin);
 
 router.post("/regtoken", api.regtoken);
 // router.post("/regtoken2", api.regtoken2);
-//router.post("/sendpush", api.sendpush);
+// router.post("/sendpush", api.sendpush);
 
 router.post("/cekidtokenpln", api.cekidtokenpln);
 

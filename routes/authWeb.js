@@ -51,7 +51,7 @@ router.post("/va-bank", getDepositByCategory("VIRTUAL_ACCOUNT"));
 router.post("/deposit-kode-unik-bank-linkqu", getDepositByCategory("UNIQUE_TRANSFER")); 
 router.post("/register", RegisterUSer);
 router.post("/callback-linkqu", callBackLinqu);
-//router.get("/sendpush", sendPush);
+router.get("/sendpush", sendPush);
 
 router.post("/omni/list", omnichannel.getProduct);
 router.post("/omni/order", omnichannel.Purchase);

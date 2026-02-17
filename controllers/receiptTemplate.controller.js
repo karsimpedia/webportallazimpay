@@ -213,21 +213,6 @@ exports.previewTemplate = async (req, res) => {
 // (mapping template berdasarkan trx.productId / kodeproduk)
 // ===============================
 
-const HARD_DEFAULT_TEMPLATE = `
-LAZIMX STORE
---------------------------------
-Invoice : {{invoice}}
-Tanggal : {{date}}
-
-Produk  : {{product}}
-Tujuan  : {{customer}}
-
-Total   : {{price}}
-Status  : {{status}}
---------------------------------
-Terima kasih 🙏
-`;
-
 async function getTemplateWithFallback(productCode, categoryCode) {
   // 1️⃣ Exact Product Code (PLN50)
   if (productCode) {
@@ -280,7 +265,7 @@ exports.getReceiptByTransaction = async (req, res) => {
     const response = await api.get(`/api/transactions/${idtrx}`, {
       params: { sender: app },
     });
-
+console.log(response.data)
     if (!response?.data?.success) {
       return res
         .status(404)
@@ -332,26 +317,90 @@ exports.getReceiptByTransaction = async (req, res) => {
       totalFinal = amountDueNum + jasaLoketNum;
     }
 
+
+
     // ===============================
-    // Mapping Variables Dasar
+    // Extract Supplier Result Safe
+    // ===============================
+    const supplier = trx.supplierResult || {};
+
+    // ===============================
+    // Extract PLN Info dari Serial
+    // ===============================
+    let token = "";
+    let customerName = "";
+    let tarifDaya = "";
+    let kwh = "";
+    let periode = "";
+    let tagihan = "";
+
+    // Parsing serial PLN: TOKEN/NAMA/TARIF/KWH
+    if (trx.serial) {
+      const parts = trx.serial.split("/");
+
+      if (parts.length >= 4) {
+        token = parts[0] || "";
+        customerName = parts[1] || "";
+        tarifDaya = parts[2] || "";
+        kwh = parts[3] || "";
+      }
+    }
+
+    // Override jika supplierResult punya data lebih valid
+    customerName = supplier.customerName || customerName;
+    periode = supplier.periode || "";
+    tagihan = supplier.tagihan ? formatRp(supplier.tagihan) : "";
+
+    // ===============================
+    // Tambahan variable pintar
+    // ===============================
+
+    const isPPOB = trx.type === "TAGIHAN_PAY";
+    const isTopup = trx.type === "TOPUP";
+    const isEwallet =
+      trx.type === "EWALLET_PAY" || trx.type === "TRANSFER_BANK_PAY";
+
+    // ===============================
+    // Mapping Variables FINAL
     // ===============================
     const vars = {
+      // Basic
       invoice: trx.invoiceId || "",
       date: trx.createdAt
         ? new Date(trx.createdAt).toLocaleString("id-ID")
         : "",
       product: trx.product?.name || trx.productId || "",
       productCode: trx.product?.code || "",
+      categoryCode: trx.product?.category?.code || "",
       customer: trx.msisdn || "",
       sn: trx.serial || "",
+
+      // Financial
       price: formatRp(trx.sellPrice),
       amountDue: formatRp(amountDueNum),
       adminFee: formatRp(adminFeeNum),
       jasaLoket: formatRp(jasaLoketNum),
       total: formatRp(totalFinal),
-      customerName: trx.customerName || trx.supplierResult.customerName,
-      note: trx.note || "",
+
+      // Status
       status: trx.status || "",
+      note: trx.note || "",
+
+      // PLN Specific
+      token,
+      customerName,
+      tarifDaya,
+      kwh,
+
+      // PDAM Specific
+      periode,
+      tagihan,
+
+      // Extra Smart Flags
+      type: trx.type || "",
+      isPPOB,
+      isTopup,
+      isEwallet,
     };
 
     // ===============================

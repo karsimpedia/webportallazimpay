@@ -40,7 +40,10 @@ controllerX.RedeemKomisi = async (req, res) => {
       msg: "Pencairan Komisi berhasil",
     });
   } catch (error) {
-    console.error("RedeemKomisi error:", error?.response?.data || error.message);
+    console.error(
+      "RedeemKomisi error:",
+      error?.response?.data || error.message,
+    );
 
     return res.json({
       success: false,
@@ -48,7 +51,6 @@ controllerX.RedeemKomisi = async (req, res) => {
     });
   }
 };
-
 
 controllerX.HistoriKomisi = async (req, res) => {
   try {
