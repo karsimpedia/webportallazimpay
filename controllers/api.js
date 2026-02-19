@@ -326,6 +326,9 @@ controllerX.tiketdeposit = async (req, res) => {
     var request = await api.post("/api/trx/fund-receive", {
       sender: uuid,
       productCode: "TIKET_BANK",
+      deviceType : "APP",
+      identifier: uuid,
+      msisdn: "082211108088", 
       amount: nominal,
     });
     //console.log(request.data);

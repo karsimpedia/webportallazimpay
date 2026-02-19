@@ -47,7 +47,7 @@ controllerX.RedeemKomisi = async (req, res) => {
 
     return res.json({
       success: false,
-      msg: "Pencairan komisi gagal",
+      msg: error?.response?.data?.error || "pencairan komisi gagal",
     });
   }
 };

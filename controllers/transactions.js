@@ -137,7 +137,7 @@ TransactionController.payNow = async (req, res) => {
 
     const data = response?.data || {};
     const legacy = mapStatusToLegacy(data);
-    console.log("tes", data);
+  
     return res.json({
       ...legacy,
       produk: kodeproduk,

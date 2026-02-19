@@ -152,7 +152,7 @@ console.log("deposit", req.body)
       productCode: bankCode,
       identifier: uuid,
       deviceType: "APP",  
-       msisdn: "082211108088",   
+      msisdn: "082211108088",   
       amount: amount,
     });
     console.log(request.data);

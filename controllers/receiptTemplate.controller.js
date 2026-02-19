@@ -261,11 +261,18 @@ Terima kasih 🙏
 exports.getReceiptByTransaction = async (req, res) => {
   try {
     const app = "app:" + req.user.uuid;
-    const { idtrx, jasaloket = 0 } = req.body;
+    const { idtrx, jasaloket = 3000 } = req.body;
     const response = await api.get(`/api/transactions/${idtrx}`, {
       params: { sender: app },
     });
-console.log(response.data)
+
+    let jl = 0;
+
+    if (jasaloket === "2000") {jl = 3000 }
+    else {jl = jasaloket }
+
+    console.log(req.body);
+    console.log(response.data);
     if (!response?.data?.success) {
       return res
         .status(404)
@@ -300,7 +307,7 @@ console.log(response.data)
     const amountDueNum = Number(trx.amountDue || 0);
     const adminFeeNum = Number(trx.adminFee || 0);
     const openAmount = Number(trx.openAmount || 0);
-    const jasaLoketNum = Number(jasaloket || 0);
+    const jasaLoketNum = Number(jl || 0);
 
     let totalFinal = 0;
 
@@ -316,8 +323,6 @@ console.log(response.data)
       // Non PPOB (TOPUP, dll)
       totalFinal = amountDueNum + jasaLoketNum;
     }
-
-
 
     // ===============================
     // Extract Supplier Result Safe

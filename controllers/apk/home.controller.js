@@ -66,6 +66,8 @@ const getHomeApk = async (req, res) => {
         }),
       ]);
 
+
+       console.log(favoriteMenu)
     res.json({
       menu: menu.map((m) => ({
         id: m.id,
@@ -107,6 +109,9 @@ const getHomeApk = async (req, res) => {
 
       contact: contact ?? null,
     });
+
+
+   
   } catch (err) {
     console.error("[getHomeApk]", err);
     res.status(500).json({
