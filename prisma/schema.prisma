@@ -254,3 +254,20 @@ model FcmDevice {
 
   @@unique([appid, deviceId])
 }
+
+
+model OtpApiSetting {
+  id        Int      @id @default(autoincrement())
+  name      String
+  baseUrl   String
+  method    String   @default("POST") // POST / GET / PUT
+  apiKey    String?
+  headers   Json?
+  bodyJson  Json?
+  variables Json?
+  isActive  Boolean  @default(false)
+  priority  Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

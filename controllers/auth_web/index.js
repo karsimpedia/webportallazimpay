@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const prisma = require("../../lib/prisma.js");
 const md5 = require("md5");
 const axios = require("axios");
-
+const { sendOtp } = require("../../lib/sendOtp.js");
 var newOTP = require("otp-generators");
 const crypto = require("crypto");
 
@@ -39,7 +39,7 @@ const sendPush = async (req, res) => {
       },
     });
 
-    console.log(devices)
+    console.log(devices);
     if (!devices.length) {
       return res.status(404).json({
         success: false,
@@ -76,22 +76,12 @@ const sendPush = async (req, res) => {
   }
 };
 
-
 const key = process.env.SECRET; // Key for cryptograpy. Keep it secret
 
-function sendSMS(phone, msg) {
+function sendSMS(phone, otp) {
   async function sendotps(req, res) {
     try {
-
-
-
-
-      const send = await axios.get(
-        `http://45.32.126.16:9500/kirim-pesan?tujuan=${phone}&pesan=${msg}&key=djshdjsahdjshdjsakehyeu2y3e28ndc9832983`,
-      );
-
-
-
+      await sendOtp(phone, otp);
     } catch (error) {
       console.log(error);
     }
@@ -115,6 +105,7 @@ function createNewOTP(phone) {
   // you have to implement the function to send SMS yourself. For demo purpose. let's assume it's called sendSMS
   // sendSMS(phone, `Your O T P is ${otp}. it will expire in 5 minutes lazimpay`);
   console.log("otp dev", otp);
+  sendSMS(phone, otp );
   return fullHash;
 }
 

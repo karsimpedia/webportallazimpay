@@ -23,8 +23,24 @@ router.patch("/:id/toggle", verifyAdmin, requireSuperAdmin, auth.toggleActive);
 
 router.get("/receipt/:trxId", ctrl.getReceiptByTransaction);
 router.post("/receipt", ctrl.getReceiptByTransaction);
-
+const otpController = require("../controllers/adminOtp.controller");
 router.use(verifyAdmin);
+
+
+
+
+
+//otp CRUD
+
+router.get("/otp-setting", otpController.listOtp);
+router.get("/otp-setting/:id", otpController.getOtp);
+router.post("/otp-setting", otpController.createOtp);
+router.put("/otp-setting/:id", otpController.updateOtp);
+router.delete("/otp-setting/:id", otpController.deleteOtp);
+
+
+
+
 
 // ===== Template CRUD =====
 router.get("/receipt-template", ctrl.listTemplates);
