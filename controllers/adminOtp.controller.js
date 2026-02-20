@@ -53,6 +53,7 @@ exports.createOtp = async (req, res) => {
       isActive,
     } = req.body;
 
+    console.log(req.body)
     if (!name || !baseUrl) {
       return res.status(400).json({ error: "name & baseUrl wajib diisi" });
     }
@@ -80,6 +81,7 @@ exports.createOtp = async (req, res) => {
 
     res.json({ success: true, data: created });
   } catch (err) {
+    console.log( err)
     res.status(500).json({ error: err.message });
   }
 };
@@ -134,6 +136,7 @@ priority,
 
     res.json({ success: true, data: updated });
   } catch (err) {
+    console.log( err)
     res.status(500).json({ error: err.message });
   }
 };
@@ -151,6 +154,7 @@ exports.deleteOtp = async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
+    console.log( err)
     res.status(500).json({ error: err.message });
   }
 };
