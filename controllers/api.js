@@ -331,14 +331,14 @@ controllerX.tiketdeposit = async (req, res) => {
       msisdn: "082211108088", 
       amount: nominal,
     });
-    //console.log(request.data);
+    console.log(request.data);
 
     const data = request.data;
 
     return res.json({
       success: true,
-      msg: data.payment.note,
-      jumlah: data.amountDue,
+      msg: data.message,
+      jumlah: data.payment.totalAmount,
     });
   } catch (error) {
     console.log(error);
