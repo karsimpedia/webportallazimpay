@@ -23,7 +23,7 @@ controllers.paymentcodeRetail = async (req, res) => {
   let uuid = "app:" + req.body.uuid;
   let amount = parseInt(req.body.jml);
   let method = req.body.method;
-console.log(req.body)
+  console.log(req.body);
   try {
     var request = await api.post("/api/trx/fund-receive", {
       sender: uuid,
@@ -31,24 +31,23 @@ console.log(req.body)
       amount: amount,
       identifier: uuid,
       deviceType: "APP",
-      msisdn: "082211108088",
       channel: "RETAIL",
     });
     console.log(request.data);
-const admin = 0
+    const admin = 0;
     const data = request.data;
     const responData = {
       amount: data.amount,
       expired: data.expiresAt,
-      bank_code: data.payment.bankCode ,
-      bank_name: data.payment.bankName ,
+      bank_code: data.payment.bankCode,
+      bank_name: data.payment.bankName,
       customer_phone: data.payment.customerPhone,
       response_desc: data.message,
-      virtual_account: data.payment.vaNumber ,
-      payment_code: data.payment.paymentCode ,
-      retail_code: data.payment.retailName ,
+      virtual_account: data.payment.vaNumber,
+      payment_code: data.payment.paymentCode,
+      retail_code: data.payment.retailName,
       customer_name: data.customerName,
-      feeadmin:  admin
+      feeadmin: admin,
     };
     return res.json({
       success: true,
@@ -101,7 +100,7 @@ controllers.virtualAccoutOnetime = async (req, res) => {
   var amount = parseInt(req.body.jml);
   var method = req.body.method;
   let bankCode = req.body.code_bank;
-console.log( "va req",req.body )
+
   // const BASE_URL = "https://gateway.linkqu.id";
   try {
     var request = await api.post("/api/trx/fund-receive", {
@@ -110,10 +109,8 @@ console.log( "va req",req.body )
       amount: amount,
       deviceType: "APP",
       identifier: uuid,
-      msisdn: "082211108088",
       channel: "va",
     });
-    console.log(request);
 
     const data = request.data;
     const responData = {
@@ -127,7 +124,7 @@ console.log( "va req",req.body )
       payment_code: data.payment.paymentCode || null,
       retail_code: data.payment.store || null,
       customer_name: data.customerName || null,
-      feeadmin: 0
+      feeadmin: 0,
     };
 
     return res.json({
@@ -144,22 +141,21 @@ controllers.TransferKodeUnik = async (req, res) => {
   var uuid = "app:" + req.body.uuid;
   var amount = parseInt(req.body.jml);
   let bankCode = req.body.code_bank;
-console.log("deposit", req.body)
+  console.log("deposit", req.body);
 
   try {
     const request = await api.post("/api/trx/fund-receive", {
       sender: uuid,
       productCode: bankCode,
       identifier: uuid,
-      deviceType: "APP",  
-      msisdn: "082211108088",   
+      deviceType: "APP",
       amount: amount,
     });
     console.log(request.data);
 
     const data = request.data;
 
-    const unique_amount =  data.payment.totalAmount -  data.amount
+    const unique_amount = data.payment.totalAmount - data.amount;
     const responData = {
       amount: data.amount,
       bank_code: data.payment.bankCode || null,

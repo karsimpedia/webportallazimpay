@@ -6,9 +6,6 @@ var utilirs = require("./utils_v9");
 const api = require("../lib/serverUtamaClient");
 const moment = require("moment");
 
-
-
-
 ProductControllers.getoperator = async (req, res) => {
   const uuid = "app:" + req.body.uuid;
   const idoperator = req.body.idoperator; // "TSEL,ISAT"
@@ -20,10 +17,19 @@ ProductControllers.getoperator = async (req, res) => {
         idoperator: idoperator,
       },
     });
-
+    // console.log(request.data);
     // =================================================
     // Legacy wrapper (SAMA PERSIS)
     // =================================================
+
+    // const data = request.data;
+    // const newData = data.map((item) => ({
+    //   ...item,
+    //   nominal: item.nominal / 1000,
+    // }));
+
+    // console.log(newData);
+
     return res.json({
       success: true,
       data: request.data,
@@ -33,13 +39,10 @@ ProductControllers.getoperator = async (req, res) => {
 
     return res.json({
       success: false,
-      msg:
-        error?.response?.data?.msg ||
-        "terjadi kesalahan server",
+      msg: error?.response?.data?.msg || "terjadi kesalahan server",
     });
   }
 };
-
 
 ProductControllers.getOperatorByTujuan = async (req, res) => {
   var uuid = "app:" + req.body.uuid;
@@ -80,7 +83,7 @@ ProductControllers.getOperatorFIlterByTujuan = async (req, res) => {
     // =================================================
     // Legacy response wrapper (PENTING)
     // =================================================
-  
+
     return res.json({
       success: true,
       data: request.data,
@@ -102,7 +105,7 @@ ProductControllers.getProductDataByTujuan = async (req, res) => {
   var cekdata = await utilirs.runQuerySelectPromise(
     req,
     "select r.idreseller,r.namareseller,r.saldo,r.ipstatic,r.email,r.ipstatic,r.poin,r.komisi,r.patokanhargajual from masterreseller r left join hptrx h on r.idreseller=h.idreseller where aes_decrypt(h.hp,password((select jalurharga from info)))=?",
-    uuid
+    uuid,
   );
   if (cekdata.length > 0) {
     var idpriceplan = cekdata[0].patokanhargajual;
@@ -110,7 +113,7 @@ ProductControllers.getProductDataByTujuan = async (req, res) => {
     let dataopr = await utilirs.runQuerySelectPromise(
       req,
       "SELECT pr.prefik,pr.idoperator,o.namaoperator,o.imgurl FROM prefik pr left join operator o on pr.idoperator=o.idoperator WHERE  MID(?,1,LENGTH(pr.prefik))=pr.prefik and length(prefik)>=2 and pr.idoperator in(?)",
-      [tujuan, iddata]
+      [tujuan, iddata],
     );
     if (dataopr.length > 0) {
       for (var i = 0; i < dataopr.length; i++) {
@@ -118,7 +121,7 @@ ProductControllers.getProductDataByTujuan = async (req, res) => {
         var dataproduk = await utilirs.runQuerySelectPromise(
           req,
           "select k.hargajual,k.komisi,p.kodeproduk,p.namaproduk,o.namaoperator,p.imgurl,IFNULL(p.keterangan,'-') as keterangan,p.nominal from detailkelompokharga k left join produk p on k.idproduk=p.idproduk left join operator o on p.idoperator=o.idoperator where k.idkelompokharga=? and p.idoperator=? order by k.hargajual asc",
-          [idpriceplan, dataopr[i].idoperator]
+          [idpriceplan, dataopr[i].idoperator],
         );
         if (dataproduk.length > 0) {
           let a = {
@@ -144,7 +147,7 @@ ProductControllers.getProductByTujuan = async (req, res) => {
   var cekdata = await utilirs.runQuerySelectPromise(
     req,
     "select r.idreseller,r.namareseller,r.saldo,r.ipstatic,r.email,r.ipstatic,r.poin,r.komisi,r.patokanhargajual from masterreseller r left join hptrx h on r.idreseller=h.idreseller where aes_decrypt(h.hp,password((select jalurharga from info)))=?",
-    uuid
+    uuid,
   );
   if (cekdata.length > 0) {
     var idpriceplan = cekdata[0].patokanhargajual;
@@ -153,7 +156,7 @@ ProductControllers.getProductByTujuan = async (req, res) => {
     let dataopr = await utilirs.runQuerySelectPromise(
       req,
       "SELECT pr.prefik,pr.idoperator,o.namaoperator,o.imgurl FROM prefik pr left join operator o on pr.idoperator=o.idoperator WHERE  MID(?,1,LENGTH(pr.prefik))=pr.prefik and length(pr.prefik)>=2",
-      [tujuan]
+      [tujuan],
     );
     if (dataopr.length > 0) {
       for (var i = 0; i < dataopr.length; i++) {
@@ -161,14 +164,14 @@ ProductControllers.getProductByTujuan = async (req, res) => {
         var dataproduk = await utilirs.runQuerySelectPromise(
           req,
           "select k.hargajual,k.komisi,p.poin,p.kodeproduk,p.idproduk,p.namaproduk,o.namaoperator,p.imgurl,IFNULL(p.keterangan,'-') as keterangan,p.nominal from detailkelompokharga k left join produk p on k.idproduk=p.idproduk left join operator o on p.idoperator=o.idoperator where k.idkelompokharga=? and p.idoperator=? order by k.hargajual asc",
-          [idpriceplan, dataopr[i].idoperator]
+          [idpriceplan, dataopr[i].idoperator],
         );
         if (dataproduk.length > 0) {
           for (let index = 0; index < dataproduk.length; index++) {
             var priceCluster = await ProductControllers.getPriceCluster(
               req,
               dataproduk[index].idproduk,
-              idrs
+              idrs,
             );
             if (priceCluster != false) {
               dataproduk[i].hargajual = priceCluster[0].hargacluster;
@@ -176,7 +179,7 @@ ProductControllers.getProductByTujuan = async (req, res) => {
               var priceReseller = await ProductControllers.getPriceReseller(
                 req,
                 dataproduk[index].idproduk,
-                idrs
+                idrs,
               );
               if (priceReseller != false) {
                 dataproduk[i].hargajual = priceReseller[0].hargajual;
@@ -186,7 +189,7 @@ ProductControllers.getProductByTujuan = async (req, res) => {
             let produkPromo = await utilirs.runQuerySelectPromise(
               req,
               "select starttime,endtime,harga from promoproduk where idkelompokharga=? and idproduk=?",
-              [idpriceplan, dataproduk[index].idproduk]
+              [idpriceplan, dataproduk[index].idproduk],
             );
             if (produkPromo.length > 0) {
               let starttime = moment(new Date(produkPromo[0].starttime));
@@ -228,7 +231,7 @@ ProductControllers.getProductByOperatorPPOB = async (req, res) => {
   var cekdata = await utilirs.runQuerySelectPromise(
     req,
     "select r.idreseller,r.namareseller,r.saldo,r.ipstatic,r.email,r.ipstatic,r.poin,r.komisi,r.patokanhargajual from masterreseller r left join hptrx h on r.idreseller=h.idreseller where aes_decrypt(h.hp,password((select jalurharga from info)))=?",
-    uuid
+    uuid,
   );
   if (cekdata.length > 0) {
     var idpriceplan = cekdata[0].patokanhargajual;
@@ -238,7 +241,7 @@ ProductControllers.getProductByOperatorPPOB = async (req, res) => {
     var dataProduk = await utilirs.runQuerySelectPromise(
       req,
       "select p.idproduk,k.hargajual,k.komisi,p.kodeproduk,p.namaproduk,o.namaoperator,o.imgurl as imgurloperator,p.poin,p.imgurl,p.keterangan,p.nominal,p.isgangguan,p.isstokkosong from detailkelompokharga k left join produk p on k.idproduk=p.idproduk left join operator o on p.idoperator=o.idoperator where k.idkelompokharga=? and p.idoperator=? order by k.hargajual,p.nominal asc",
-      [idpriceplan, idoperator]
+      [idpriceplan, idoperator],
     );
     if (dataProduk.length > 0) {
       for (var i = 0; i < dataProduk.length; i++) {
@@ -260,7 +263,7 @@ ProductControllers.getProductByOperatorPPOB = async (req, res) => {
                 var hargaMarkup = await utilirs.getHargaMarkup(
                   req,
                   tmpParamupline,
-                  dataProduk[i].idproduk
+                  dataProduk[i].idproduk,
                 );
                 if (hargaMarkup.length > 0) {
                   tambahan += parseInt(hargaMarkup[0].markup);
@@ -315,11 +318,16 @@ ProductControllers.getProductByOperator = async (req, res) => {
     // =================================================
     // Legacy response (WAJIB SAMA)
     // =================================================
+    const data = request.data;
 
-    console.log( request.data )
+    const newData = data.map((item) => ({
+      ...item,
+      nominal: item.nominal / 1000,
+    }));
+
     return res.json({
       success: true,
-      data: request.data,
+      data: newData,
     });
   } catch (error) {
     console.error(error?.response?.data || error.message);
@@ -338,7 +346,7 @@ ProductControllers.produktoken = async (req, res) => {
     var cekdata = await utilirs.runQuerySelectPromise(
       req,
       "select r.idreseller,r.namareseller,r.saldo,r.ipstatic,r.email,r.ipstatic,r.poin,r.komisi,r.patokanhargajual from masterreseller r left join hptrx h on r.idreseller=h.idreseller where aes_decrypt(h.hp,password((select jalurharga from info)))=?",
-      uuid
+      uuid,
     );
     if (cekdata.length > 0) {
       var idpriceplan = cekdata[0].patokanhargajual;
@@ -347,7 +355,7 @@ ProductControllers.produktoken = async (req, res) => {
       var dataProduk = await utilirs.runQuerySelectPromise(
         req,
         "select p.idproduk,k.hargajual as harga,k.komisi,p.kodeproduk,p.idproduk,p.namaproduk,o.namaoperator,o.imgurl as image,p.poin,p.imgurl,p.keterangan,p.nominal,p.isgangguan,p.isstokkosong from detailkelompokharga k left join produk p on k.idproduk=p.idproduk left join operator o on p.idoperator=o.idoperator where p.jenisproduk=0 and k.idkelompokharga=? and p.idoperator=? order by k.hargajual asc",
-        [idpriceplan, process.env.APP_PLN]
+        [idpriceplan, process.env.APP_PLN],
       );
       if (dataProduk.length > 0) {
         for (var i = 0; i < dataProduk.length; i++) {
@@ -370,14 +378,14 @@ ProductControllers.produktoken = async (req, res) => {
                     var hargaMarkup = await utilirs.getHargaMarkup(
                       req,
                       tmpParamupline,
-                      dataProduk[i].idproduk
+                      dataProduk[i].idproduk,
                     );
                     if (hargaMarkup.length > 0) {
                       tambahan += parseInt(hargaMarkup[0].markup);
                     } else {
                       var getUppline = await utilirs.getUpline(
                         req,
-                        tmpParamupline
+                        tmpParamupline,
                       );
                       tambahan += parseInt(cekUppline[0].tambahanhargapribadi);
                     }
@@ -388,14 +396,14 @@ ProductControllers.produktoken = async (req, res) => {
                   var hargaMarkup = await utilirs.getHargaMarkup(
                     req,
                     tmpParamupline,
-                    dataProduk[i].idproduk
+                    dataProduk[i].idproduk,
                   );
                   if (hargaMarkup.length > 0) {
                     tambahan += parseInt(hargaMarkup[0].markup);
                   } else {
                     var getUppline = await utilirs.getUpline(
                       req,
-                      tmpParamupline
+                      tmpParamupline,
                     );
                     tambahan += parseInt(cekUppline[0].tambahanhargapribadi);
                   }
@@ -409,7 +417,7 @@ ProductControllers.produktoken = async (req, res) => {
           var priceCluster = await ProductControllers.getPriceCluster(
             req,
             dataProduk[i].idproduk,
-            idrs
+            idrs,
           );
           if (priceCluster != false) {
             dataProduk[i].hargajual = priceCluster[0].hargacluster;
@@ -417,7 +425,7 @@ ProductControllers.produktoken = async (req, res) => {
             var priceReseller = await ProductControllers.getPriceReseller(
               req,
               dataProduk[i].idproduk,
-              idrs
+              idrs,
             );
             if (priceReseller != false) {
               dataProduk[i].hargajual = priceReseller[0].hargajual;
@@ -429,7 +437,7 @@ ProductControllers.produktoken = async (req, res) => {
           let produkPromo = await utilirs.runQuerySelectPromise(
             req,
             "select starttime,endtime,harga from promoproduk where idkelompokharga=? and idproduk=?",
-            [idpriceplan, dataProduk[i].idproduk]
+            [idpriceplan, dataProduk[i].idproduk],
           );
           if (produkPromo.length > 0) {
             let starttime = moment(new Date(produkPromo[0].starttime));
@@ -474,7 +482,7 @@ ProductControllers.getPDAM = async (req, res) => {
   var cekdata = await utilirs.runQuerySelectPromise(
     req,
     "select r.idreseller,r.namareseller,r.saldo,r.ipstatic,r.email,r.ipstatic,r.poin,r.komisi,r.patokanhargajual from masterreseller r left join hptrx h on r.idreseller=h.idreseller where aes_decrypt(h.hp,password((select jalurharga from info)))=?",
-    uuid
+    uuid,
   );
   if (cekdata.length > 0) {
     var idreseller = cekdata[0].idreseller;
@@ -483,7 +491,7 @@ ProductControllers.getPDAM = async (req, res) => {
     var dataProduk = await utilirs.runQuerySelectPromise(
       req,
       "select k.hargajual,k.komisi,p.kodeproduk,p.namaproduk,o.namaoperator,p.imgurl,p.keterangan,p.isgangguan as gangguan,p.isstokkosong as stokkosong from detailkelompokharga k left join produk p on k.idproduk=p.idproduk left join operator o on p.idoperator=o.idoperator where k.idkelompokharga=? and p.kodeproduk like '%PDAM%'",
-      [idpriceplan]
+      [idpriceplan],
     );
     res.json({ succes: true, data: dataProduk });
   } else {
@@ -495,7 +503,7 @@ ProductControllers.getPrice = async (req, product_id, pricePlan) => {
   var rows = await utilirs.runQuerySelectPromise(
     req,
     "select d.hargajual,d.aktif,k.mlm from detailkelompokharga d left join kelompokharga k on d.idkelompokharga=k.idkelompokharga where d.idproduk=? and d.idkelompokharga=?",
-    [product_id, pricePlan]
+    [product_id, pricePlan],
   );
   if (rows.length > 0) {
     return rows;
@@ -508,7 +516,7 @@ ProductControllers.getPriceCluster = async (req, product_id, idRs) => {
   var rows = await utilirs.runQuerySelectPromise(
     req,
     "select hargacluster from produkcluster WHERE idproduk=?  and idareadomisili=(select idareadomisili from masterreseller where idreseller=?)",
-    [product_id, idRs]
+    [product_id, idRs],
   );
   if (rows.length > 0) {
     return rows;
@@ -521,7 +529,7 @@ ProductControllers.getPriceReseller = async (req, product_id, idRs) => {
   var rows = await utilirs.runQuerySelectPromise(
     req,
     "select hargajual from produkreseller WHERE idproduk=? and idreseller=?",
-    [product_id, idRs]
+    [product_id, idRs],
   );
   if (rows.length > 0) {
     return rows;

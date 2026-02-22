@@ -422,6 +422,7 @@ const otpVerifyV2 = async (req, res) => {
         var user = {
           idreseller: idreseller,
           namareseller: cekdata.data.resellerName,
+          phone: phone
         };
 
         //res.json({ success: true, otp: false, msg: "login sukses" });
@@ -602,62 +603,64 @@ const forgotPinFinal = async (req, res) => {
 
 const validasiTokenV2 = async (req, res) => {
   try {
-    let token = req.body.token;
-    let uuid = req.body.uuid;
-    let appid = "app:" + uuid;
-    let deviceId = req.body.deviceId;
-    let apikey = req.body.apikey;
-    let state = true;
+    const { token, uuid, deviceId, apikey } = req.body;
+    const appid = "app:" + uuid;
 
+    // 🔐 Generate APIKEY SERVER
     const apikeyServer = md5(process.env.SERVER_KEY + uuid + deviceId);
     const hash = crypto
-      .createHmac("sha256", key)
+      .createHmac("sha256", process.env.SERVER_KEY)
       .update(apikeyServer)
       .digest("hex");
-    console.log(hash);
-    console.log(apikey);
+
     if (apikey !== hash) {
-      res.json({ success: false, msg: "apikey tidak valid" });
-      return;
+      return res.json({ success: false, msg: "apikey tidak valid" });
     }
 
+    // 🔎 Verify + Decode Token
+    let decoded;
     try {
-      jwt.verify(token, process.env.SECRET);
-    } catch {
-      return res.json({ success: false, msg: "Token Anda tidak valid" });
+      decoded = jwt.verify(token, process.env.SECRET);
+    } catch (err) {
+      return res.json({ success: false, msg: "Token Anda tidak valid / expired" });
     }
 
-    let cekdata = await api.post("/reseller/check-deviceid", {
+    console.log("TOKEN DECODE:", decoded);
+
+    // 🔍 Cek device ke API
+    const cekdata = await api.post("/reseller/check-deviceid", {
       sender: appid,
       id: appid,
       type: "APP",
     });
-    if (cekdata.data.registered) {
-      var user = {
-        idreseller: cekdata.data.resellerId,
-        namareseller: cekdata.data.resellerName,
-        uuid,
-      };
-      var newtoken = jwt.sign(user, process.env.SECRET, {
-        expiresIn: "1d",
-      });
 
-      res.json({
-        success: true,
-        idreseller: cekdata.data.resellerId,
-        namareseller: cekdata.data.resellerName,
-        token: newtoken,
-        kodereferral: cekdata.data.referralCode,
-        uuid,
-        apikey: hash,
-      });
-    } else {
-      res.json({ success: false, msg: "Id Tidak terdaftar" });
+    if (!cekdata.data.registered) {
+      return res.json({ success: false, msg: "Id Tidak terdaftar" });
     }
+
+    const user = {
+      idreseller: cekdata.data.resellerId,
+      namareseller: cekdata.data.resellerName,
+      uuid,
+    };
+
+    const newtoken = jwt.sign(user, process.env.SECRET, {
+      expiresIn: "1d",
+    });
+
+    return res.json({
+      success: true,
+      idreseller: user.idreseller,
+      namareseller: user.namareseller,
+      token: newtoken,
+      kodereferral: cekdata.data.referralCode,
+      uuid,
+      apikey: hash,
+    });
+
   } catch (err) {
     console.log(err);
-    res.json({ success: false, msg: "erorr" });
-    return;
+    return res.json({ success: false, msg: "error server" });
   }
 };
 const validasiToken = async (req, res) => {

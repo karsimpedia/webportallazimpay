@@ -327,11 +327,10 @@ controllerX.tiketdeposit = async (req, res) => {
       sender: uuid,
       productCode: "TIKET_BANK",
       deviceType : "APP",
-      identifier: uuid,
-      msisdn: "082211108088", 
+      identifier: uuid,      
       amount: nominal,
     });
-    console.log(request.data);
+   
 
     const data = request.data;
 
