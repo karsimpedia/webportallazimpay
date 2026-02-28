@@ -268,8 +268,11 @@ exports.getReceiptByTransaction = async (req, res) => {
 
     let jl = 0;
 
-    if (jasaloket === "2000") {jl = 3000 }
-    else {jl = jasaloket }
+    if (jasaloket === "2000") {
+      jl = 3000;
+    } else {
+      jl = jasaloket;
+    }
 
     console.log(req.body);
     console.log(response.data);
@@ -346,8 +349,8 @@ exports.getReceiptByTransaction = async (req, res) => {
       if (parts.length >= 4) {
         token = parts[0] || "";
         customerName = parts[1] || "";
-        tarifDaya = parts[2] || "";
-        kwh = parts[3] || "";
+        tarifDaya = parts[2] + "/" + parts[3] || "";
+        kwh = parts[4] || "";
       }
     }
 

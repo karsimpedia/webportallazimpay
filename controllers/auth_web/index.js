@@ -197,7 +197,7 @@ const loginByPhoneV2 = async (req, res) => {
   try {
     var hp = req.body.nohp;
     var pin = req.body.pin;
-
+console.log(req.body)
     if (hp == undefined || pin == undefined) {
       res.json({
         success: false,
