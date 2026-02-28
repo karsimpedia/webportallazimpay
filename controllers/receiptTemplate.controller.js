@@ -268,13 +268,12 @@ exports.getReceiptByTransaction = async (req, res) => {
 
     let jl = 0;
 
-    if (jasaloket === "2000") {
+    if (jasaloket === "2000" || jasaloket === "") {
       jl = 3000;
     } else {
       jl = jasaloket;
     }
 
-    console.log(req.body);
     console.log(response.data);
     if (!response?.data?.success) {
       return res
