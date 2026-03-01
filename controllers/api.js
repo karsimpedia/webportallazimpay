@@ -6,7 +6,7 @@ const md5 = require("md5");
 const S = require("string");
 const axios = require("axios");
 const pad = require("utils-pad-string");
-
+const crypto = require("crypto");
 const api = require("../lib/serverUtamaClient");
 
 controllerX.gantiKodeReferral = async (req, res) => {
@@ -71,9 +71,7 @@ controllerX.getinfo = async (req, res) => {
   }
 };
 controllerX.regtoken = async (req, res) => {
-
-
-  console.log( req.body)
+  console.log(req.body);
   try {
     const { uuid, regid, deviceId, platform = "android" } = req.body;
 
@@ -127,7 +125,10 @@ controllerX.cekidtokenpln = async (req, res) => {
   const username = "zopiyuWy9JXW";
   const apiKey = "a763a4cb-5234-5aa9-afc2-81355e34653c";
 
-  const sign = md5(username + apiKey + idpln);
+  const sign = crypto
+    .createHash("md5")
+    .update(username + apiKey + idpln)
+    .digest("hex");
 
   try {
     let jsonData = {
@@ -140,7 +141,7 @@ controllerX.cekidtokenpln = async (req, res) => {
       jsonData,
     );
 
-console.log( "cekidpln" ,  resp)
+    console.log("cekidpln", resp);
 
     return res.json({
       success: true,
@@ -328,11 +329,10 @@ controllerX.tiketdeposit = async (req, res) => {
     var request = await api.post("/api/trx/fund-receive", {
       sender: uuid,
       productCode: "TIKET_BANK",
-      deviceType : "APP",
-      identifier: uuid,      
+      deviceType: "APP",
+      identifier: uuid,
       amount: nominal,
     });
-   
 
     const data = request.data;
 
