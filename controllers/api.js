@@ -147,8 +147,9 @@ controllerX.cekidtokenpln = async (req, res) => {
       // msg: "akun tidak ditemukan",
     });
   } catch (error) {
-    console.log("pln eroro", error.data);
-    res.json({ success: false, data: error.data, msg: "Id tidak ditemukan" });
+    console.log("DIGIFLAZZ ERROR BODY:", error.resp?.data)
+   
+    res.json({ success: false, data: error.resp?.data, msg: "Id tidak ditemukan" });
     //res.json({ success: false, msg: "bisa langsung hit aja" });
   }
 };
