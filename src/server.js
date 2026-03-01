@@ -1,5 +1,5 @@
 "use strict";
-
+process.env.TZ = "Asia/Jakarta";
 const http = require("http");
 const https = require("https");
 const fs = require("fs");
