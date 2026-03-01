@@ -141,16 +141,14 @@ controllerX.cekidtokenpln = async (req, res) => {
       jsonData,
     );
 
-    console.log("cekidpln", resp);
-
     return res.json({
       success: true,
       data: resp.data.data,
       // msg: "akun tidak ditemukan",
     });
   } catch (error) {
-    console.log("cekidpln", error);
-    res.json({ success: false, msg: "error" });
+    console.log("pln eroro", error.data);
+    res.json({ success: false, data: error.data, msg: "Id tidak ditemukan" });
     //res.json({ success: false, msg: "bisa langsung hit aja" });
   }
 };
