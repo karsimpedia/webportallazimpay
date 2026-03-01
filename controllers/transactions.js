@@ -26,7 +26,8 @@ function mapStatusToLegacy(data = {}) {
   if (
     ["TAGIHAN_INQUIRY", "EWALLET_INQUIRY", "TRANSFER_BANK_INQUIRY"].includes(
       typeTrx,
-    )
+    ) &&
+    status === "SUCCESS"
   ) {
     msg = [
       col("Id Number", dest),
@@ -137,7 +138,7 @@ TransactionController.payNow = async (req, res) => {
 
     const data = response?.data || {};
     const legacy = mapStatusToLegacy(data);
-  
+
     return res.json({
       ...legacy,
       produk: kodeproduk,

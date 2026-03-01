@@ -140,6 +140,8 @@ controllerX.cekidtokenpln = async (req, res) => {
       jsonData,
     );
 
+console.log( "cekidpln" ,  resp.data)
+
     return res.json({
       success: true,
       data: resp.data.data,
