@@ -1,10 +1,9 @@
 "use strict";
 const controllerX = {};
 var utilirs = require("./utils_v9");
-const moment = require("moment");
-const md5 = require("md5");
+
 const S = require("string");
-const pad = require("utils-pad-string");
+
 const ProductControllers = require("./product");
 const api = require("../lib/serverUtamaClient");
 

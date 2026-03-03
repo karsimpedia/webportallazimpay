@@ -27,7 +27,7 @@ function mapStatusToLegacy(data = {}) {
     ["TAGIHAN_INQUIRY", "EWALLET_INQUIRY", "TRANSFER_BANK_INQUIRY"].includes(
       typeTrx,
     ) &&
-    status === "SUCCESS"
+    status === 'WAITING'
   ) {
     msg = [
       col("Id Number", dest),
