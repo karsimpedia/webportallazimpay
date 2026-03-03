@@ -27,7 +27,7 @@ function mapStatusToLegacy(data = {}) {
     ["TAGIHAN_INQUIRY", "EWALLET_INQUIRY", "TRANSFER_BANK_INQUIRY"].includes(
       typeTrx,
     ) &&
-    status === 'WAITING'
+    status === "WAITING"
   ) {
     msg = [
       col("Id Number", dest),
@@ -92,9 +92,6 @@ function parseTujuanWithNominal(rawTujuan, bodyNominal) {
     nominal: bodyNominal || null,
   };
 }
-
-
-
 
 TransactionController.payNow = async (req, res) => {
   const {
@@ -163,30 +160,28 @@ TransactionController.payNow = async (req, res) => {
   }
 };
 
-
 TransactionController.hapusAkun = async (req, res) => {
+
   try {
     const uuid = "app:" + req.body.uuid;
 
     const apiRes = await api.delete(
       "/reseller/delete_me",
       {
-        sender: uuid,
-        pin: req.body.pin,       
-      },
-      {
-        headers: {
-          "x-sender": uuid,
+        data: {
+          sender: uuid,
+          pin: req.body.pin,
         },
-      }
+      },
+     
     );
 
-    return res.json({success: true, msg: "akun berhasil dihapus"});
+    return res.json({ success: true, msg: "akun berhasil dihapus" });
   } catch (error) {
     console.error("proxy DeleteAKun:", error?.response?.data || error);
     return res.json({
       success: false,
-      msg: "Gagal hapus akun gagal",
+      msg: error?.response?.data.message || "Gagal hapus akun"
     });
   }
 };

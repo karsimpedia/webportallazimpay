@@ -39,7 +39,7 @@ router.get("/getme", api.getme);
 // router.post("/cekregister", api.CekEsisting);
 // router.post("/accountKit", api.accountKit);
 router.post("/register", Downline.regonline);
-router.delete("/delete-akun", TransactionController.hapusAkun);
+router.post("/delete-akun", TransactionController.hapusAkun);
 router.get("/downline", Downline.getdownline);
 router.post("/regdownline", Downline.regdownline);
 router.post("/markup", Downline.EditSelisih);
