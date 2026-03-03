@@ -45,7 +45,7 @@ function mapStatusToLegacy(data = {}) {
       rc: data.rc || "1",
       idtransaksi: data.trxId,
       sn: data.serial || data.sn || data.supplierRef || data.ref,
-      msg: msg || "Transaksi berhasil",
+      msg: "Transaksi berhasil",
     };
   }
 
@@ -53,7 +53,7 @@ function mapStatusToLegacy(data = {}) {
     return {
       success: false,
       rc: data.rc || "2",
-      msg: msg || "Transaksi gagal",
+      msg: "Transaksi gagal",
     };
   }
 
@@ -92,6 +92,9 @@ function parseTujuanWithNominal(rawTujuan, bodyNominal) {
     nominal: bodyNominal || null,
   };
 }
+
+
+
 
 TransactionController.payNow = async (req, res) => {
   const {
@@ -156,6 +159,34 @@ TransactionController.payNow = async (req, res) => {
       reffid: idtrx,
       rc: "99",
       msg: error?.response?.data?.error || "Gagal menghubungi server utama",
+    });
+  }
+};
+
+
+TransactionController.hapusAkun = async (req, res) => {
+  try {
+    const uuid = "app:" + req.body.uuid;
+
+    const apiRes = await api.delete(
+      "/reseller/delete_me",
+      {
+        sender: uuid,
+        pin: req.body.pin,       
+      },
+      {
+        headers: {
+          "x-sender": uuid,
+        },
+      }
+    );
+
+    return res.json({success: true, msg: "akun berhasil dihapus"});
+  } catch (error) {
+    console.error("proxy DeleteAKun:", error?.response?.data || error);
+    return res.json({
+      success: false,
+      msg: "Gagal hapus akun gagal",
     });
   }
 };

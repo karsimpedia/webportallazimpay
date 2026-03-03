@@ -6,7 +6,7 @@ var api = require("../controllers/api");
 const TransactionController = require("../controllers/transactions");
 var pricelist = require("../controllers/pricelist");
 var cetak = require("../controllers/cetakstruk");
-const cetakBaru = require("../controllers/cetak.controller")
+const cetakBaru = require("../controllers/cetak.controller");
 
 var Downline = require("../controllers/downline");
 var Hadiah = require("../controllers/poinreward");
@@ -17,7 +17,7 @@ let cetaknew = require("../controllers/controllerscetak");
 var avianaPay = require("../controllers/avianaPay");
 var VoucherFisikControllers = require("../controllers/voucherfisik");
 const ctrl = require("../controllers/receiptTemplate.controller");
-router.post("/receipt",  ctrl.getReceiptByTransaction);
+router.post("/receipt", ctrl.getReceiptByTransaction);
 // router.get("/hadiah", Hadiah.listhadiah);
 // router.get("/hadiah/reward", Hadiah.getRewards);
 // router.post("/hadiah/redeem", Hadiah.redeemNow);
@@ -39,6 +39,7 @@ router.get("/getme", api.getme);
 // router.post("/cekregister", api.CekEsisting);
 // router.post("/accountKit", api.accountKit);
 router.post("/register", Downline.regonline);
+router.delete("/delete-akun", TransactionController.hapusAkun);
 router.get("/downline", Downline.getdownline);
 router.post("/regdownline", Downline.regdownline);
 router.post("/markup", Downline.EditSelisih);
@@ -103,7 +104,7 @@ router.post("/regtoken", api.regtoken);
 
 router.post("/cekidtokenpln", api.cekidtokenpln);
 
-router.post("/cetak", ctrl.getReceiptByTransaction );
+router.post("/cetak", ctrl.getReceiptByTransaction);
 //router.post("/cetak", cetaknew.cetakNew);
 router.post("/gantikodereferral", api.gantiKodeReferral);
 // router.post("/getnotif", api.Notification);
