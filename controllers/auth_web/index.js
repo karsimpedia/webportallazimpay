@@ -231,7 +231,7 @@ console.log(req.body)
     if (!cekhp.data.success) {
       return res.json({
         success: false,
-        msg: "No Hp tidak terdaftar",
+        msg: cekhp.data.msg,
       });
     }
 
