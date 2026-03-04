@@ -5,7 +5,7 @@ const {
   formatRp,
 } = require("../utils/receiptRenderer");
 const api = require("../lib/serverUtamaClient");
-
+var utilirs = require("./utils_v9");
 const pad = require("utils-pad-string");
 // ===============================
 // CREATE TEMPLATE
@@ -460,6 +460,9 @@ exports.getReceiptByTransaction = async (req, res) => {
       "\nLebih lanjut hubungi PLN 123\n" +
       "\nTERIMA KASIH\r\n" +
       "\n\nLazimPay - https://lazimpay.com\r\n";
+
+
+
 
     function prepareForEscpos(text, width = 32, maxLength = 700) {
       let cleaned = text
