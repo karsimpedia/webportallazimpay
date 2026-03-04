@@ -500,9 +500,6 @@ exports.getReceiptByTransaction = async (req, res) => {
     receiptText = prepareForEscpos(receiptText, 32);
     receiptText += "\n\n\n";
 
-    if (categoryCode == "PPLN") {
-      receiptText = strukPLN;
-    }
 
     console.log(JSON.stringify(receiptText));
     res.json({
