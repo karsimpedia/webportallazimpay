@@ -411,23 +411,25 @@ exports.getReceiptByTransaction = async (req, res) => {
       isEwallet,
     };
 
-function prepareForEscpos(text, width = 32) {
-  return text
-    .replace(/[^\x00-\x7F]/g, "")
-    .replace(/\r/g, "")
-    .replace(/\t/g, " ")
-    .split("\n")
-    .map((line) => line.slice(0, width))
-    .join("\n") + "\n\n\n";
-}
+    function prepareForEscpos(text, width = 32) {
+      return (
+        text
+          .replace(/[^\x00-\x7F]/g, "")
+          .replace(/\r/g, "")
+          .replace(/\t/g, " ")
+          .split("\n")
+          .map((line) => line.slice(0, width))
+          .join("\n") + "\n\n\n"
+      );
+    }
 
-    
     // ===============================
     // Render Template
     // ===============================
     let receiptText = renderTemplate(tpl.template, vars);
-    receiptText = prepareForEscpos(receiptText, 32);
 
+    receiptText = prepareForEscpos(receiptText, 32);
+    receiptText += "\n\n\n";
     console.log(JSON.stringify(receiptText));
     res.json({
       success: true,
