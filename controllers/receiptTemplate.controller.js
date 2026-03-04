@@ -425,6 +425,40 @@ exports.getReceiptByTransaction = async (req, res) => {
       isEwallet,
     };
 
+    let sn = trx.serial;
+    var strukPLN =
+      "STRUK PEMBELIAN PLN PRABAYAR\n\n" +
+      "\nWaktu       :" +
+      formatDateSafe(trx.createdAt) +
+      "\nNo.METER    :" +
+      trx.msisdn +
+      "\nNAMA        :" +
+      sn.split("/")[1] +
+      "\nTD          :" +
+      sn.split("/")[2] +
+      "/" +
+      sn.split("/")[3] +
+      "\nKWH         :" +
+      sn.split("/")[4] +
+      //"\nKWH         :" + sn.split("/KWH:")[1].split("/")[0] +
+
+      //"\nMATERRAI    :RP " + pad(utilirs.todesimal(materai).toString(), 12, { lpad: "." }) +
+      "\nNOMINAL     :Rp " +
+      pad(utilirs.todesimal(amountDueNum).toString(), 12, { lpad: "." }) +
+      "\nJASA LOKET  :Rp " +
+      pad(utilirs.todesimal(jasaloket).toString(), 12, { lpad: "." }) +
+      "\nBAYAR       :Rp " +
+      pad(utilirs.todesimal(totalFinal).toString(), 12, { lpad: "." }) +
+      "\n\n        STROOM/TOKEN " +
+      "\n   " +
+      sn.split("/")[0] +      
+      
+      "\n\nStruk ini merupakan bukti" +
+      "\npembayaran yang sah" +
+      "\nLebih lanjut hubungi PLN 123\n" +
+      "\nTERIMA KASIH\r\n" +
+      "\n\nLazimPay - https://lazimpay.com\r\n";
+
     function prepareForEscpos(text, width = 32, maxLength = 700) {
       let cleaned = text
         .replace(/[^\x00-\x7F]/g, "")
@@ -460,6 +494,11 @@ exports.getReceiptByTransaction = async (req, res) => {
 
     receiptText = prepareForEscpos(receiptText, 32);
     receiptText += "\n\n\n";
+
+    if (categoryCode == "PPLN") {
+      receiptText = strukPLN;
+    }
+
     console.log(JSON.stringify(receiptText));
     res.json({
       success: true,
