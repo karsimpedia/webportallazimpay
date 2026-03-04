@@ -260,7 +260,7 @@ Terima kasih 🙏
 
 exports.getReceiptByTransaction = async (req, res) => {
   try {
-    const app = "app:lazimpro-YmYwYTAwYWEyNWMwMTdiMWJiZmQ1NWFjMzNiZjMzYjk="; // semnetra biar engk eror
+    const app = "082211108088"; // semnetra biar engk eror
     const { idtrx, jasaloket = 3000 } = req.body;
     const response = await api.get(`/api/transactions/${idtrx}`, {
       params: { sender: app },
@@ -274,7 +274,6 @@ exports.getReceiptByTransaction = async (req, res) => {
       jl = jasaloket;
     }
 
-    console.log(response.data);
     if (!response?.data?.success) {
       return res
         .status(404)
@@ -300,8 +299,10 @@ exports.getReceiptByTransaction = async (req, res) => {
     // ===============================
     // Format Helper
     // ===============================
-    const formatRp = (n) => "Rp " + Number(n || 0).toLocaleString("id-ID");
-
+    const formatRp = (n) => {
+      const num = Number(n || 0);
+      return "Rp " + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    };
     // ===============================
     // Hitung Total Berdasarkan Jenis
     // ===============================
@@ -410,19 +411,24 @@ exports.getReceiptByTransaction = async (req, res) => {
       isEwallet,
     };
 
-    function prepareForEscpos(text, width = 32) {
-      return text
-        .replace(/[^\x00-\x7F]/g, "")
-        .replace(/\r/g, "")
-        .split("\n")
-        .map((line) => line.slice(0, width))
-        .join("\n");
-    }
+function prepareForEscpos(text, width = 32) {
+  return text
+    .replace(/[^\x00-\x7F]/g, "")
+    .replace(/\r/g, "")
+    .replace(/\t/g, " ")
+    .split("\n")
+    .map((line) => line.slice(0, width))
+    .join("\n") + "\n\n\n";
+}
+
+    
     // ===============================
     // Render Template
     // ===============================
     let receiptText = renderTemplate(tpl.template, vars);
     receiptText = prepareForEscpos(receiptText, 32);
+
+    console.log(JSON.stringify(receiptText));
     res.json({
       success: true,
       code: tpl.code,
