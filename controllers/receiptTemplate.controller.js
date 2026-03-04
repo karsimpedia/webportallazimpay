@@ -5,6 +5,8 @@ const {
   formatRp,
 } = require("../utils/receiptRenderer");
 const api = require("../lib/serverUtamaClient");
+
+const pad = require("utils-pad-string");
 // ===============================
 // CREATE TEMPLATE
 // POST /admin/receipt-template
