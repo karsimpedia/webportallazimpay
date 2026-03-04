@@ -342,6 +342,21 @@ exports.getReceiptByTransaction = async (req, res) => {
     let periode = "";
     let tagihan = "";
 
+    function formatDateSafe(date) {
+      const d = new Date(date);
+      return (
+        d.getDate().toString().padStart(2, "0") +
+        "/" +
+        (d.getMonth() + 1).toString().padStart(2, "0") +
+        "/" +
+        d.getFullYear() +
+        " " +
+        d.getHours().toString().padStart(2, "0") +
+        ":" +
+        d.getMinutes().toString().padStart(2, "0")
+      );
+    }
+
     // Parsing serial PLN: TOKEN/NAMA/TARIF/KWH
     if (trx.serial) {
       const parts = trx.serial.split("/");
@@ -374,9 +389,8 @@ exports.getReceiptByTransaction = async (req, res) => {
     const vars = {
       // Basic
       invoice: trx.invoiceId || "",
-      date: trx.createdAt
-        ? new Date(trx.createdAt).toLocaleString("id-ID")
-        : "",
+      date: formatDateSafe(trx.createdAt),
+
       product: trx.product?.name || trx.productId || "",
       productCode: trx.product?.code || "",
       categoryCode: trx.product?.category?.code || "",
@@ -418,7 +432,16 @@ exports.getReceiptByTransaction = async (req, res) => {
           .replace(/\r/g, "")
           .replace(/\t/g, " ")
           .split("\n")
-          .map((line) => line.slice(0, width))
+          .map((line) => {
+            if (line.length <= width) return line;
+
+            // auto wrap manual
+            const chunks = [];
+            for (let i = 0; i < line.length; i += width) {
+              chunks.push(line.slice(i, i + width));
+            }
+            return chunks.join("\n");
+          })
           .join("\n") + "\n\n\n"
       );
     }
