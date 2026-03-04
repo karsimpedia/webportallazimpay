@@ -425,25 +425,32 @@ exports.getReceiptByTransaction = async (req, res) => {
       isEwallet,
     };
 
-    function prepareForEscpos(text, width = 32) {
-      return (
-        text
-          .replace(/[^\x00-\x7F]/g, "")
-          .replace(/\r/g, "")
-          .replace(/\t/g, " ")
-          .split("\n")
-          .map((line) => {
-            if (line.length <= width) return line;
+    function prepareForEscpos(text, width = 32, maxLength = 700) {
+      let cleaned = text
+        .replace(/[^\x00-\x7F]/g, "")
+        .replace(/\r/g, "")
+        .replace(/\t/g, " ")
+        .split("\n")
+        .map((line) => {
+          if (line.length <= width) return line;
 
-            // auto wrap manual
-            const chunks = [];
-            for (let i = 0; i < line.length; i += width) {
-              chunks.push(line.slice(i, i + width));
-            }
-            return chunks.join("\n");
-          })
-          .join("\n") + "\n\n\n"
-      );
+          const chunks = [];
+          for (let i = 0; i < line.length; i += width) {
+            chunks.push(line.slice(i, i + width));
+          }
+          return chunks.join("\n");
+        })
+        .join("\n");
+
+      // hapus newline kosong berlebihan
+      cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+
+      // batasi total panjang
+      if (cleaned.length > maxLength) {
+        cleaned = cleaned.slice(0, maxLength);
+      }
+
+      return cleaned;
     }
 
     // ===============================
