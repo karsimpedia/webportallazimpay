@@ -408,7 +408,7 @@ exports.getReceiptByTransaction = async (req, res) => {
     const categoryCodeUpper = String(trx.product?.category?.code || "").toUpperCase();
 
     const isPlnPrepaid =
-      categoryCodeUpper === "PLN" &&
+      categoryCodeUpper === "PLNPREPAID" &&
       productNameUpper.includes("TOKEN");
 
     if (isPlnPrepaid) {
