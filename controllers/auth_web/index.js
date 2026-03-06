@@ -601,6 +601,55 @@ const forgotPinFinal = async (req, res) => {
   }
 };
 
+const validasiToken = async (req, res) => {
+  try {
+    let token = req.body.token;
+    let uuid = req.body.uuid;
+    let appid = "app:" + uuid;
+    let state = true;
+
+    jwt.verify(token, process.env.SECRET, function (err, decoded) {
+      if (err) {
+        state = false;
+        res.json({ success: false, msg: "Token Anda  tidak Valid 1" });
+        return;
+      }
+    });
+    if (state == true) {
+      let cekdata = await api.post("/api/reseller/check-deviceid", {
+        sender: appid,
+        id: appid,
+        type: "APP",
+      });
+      if (cekdata.data.registered) {
+        var user = {
+          idreseller: cekdata.data.resellerId,
+          namareseller: cekdata.data.resellerName,
+          uuid,
+        };
+        var newtoken = jwt.sign(user, process.env.SECRET, {
+          expiresIn: "1d",
+        });
+      }
+      let secretKey = md5(process.env.SECRET + uuid).toLowerCase();
+      res.json({
+        success: true,
+        idreseller: cekdata.data.resellerId,
+        namareseller: cekdata.data.resellerNamer,
+        token: newtoken,
+        kodereferral: cekdata.data.referralCode,
+        uuid,
+        secretKey,
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({ success: false, msg: "Token Anda  tidak Valid 3" });
+    return;
+  }
+};
+
+
 const validasiTokenV2 = async (req, res) => {
   try {
     const { token, uuid, deviceId, apikey } = req.body;
@@ -609,7 +658,7 @@ const validasiTokenV2 = async (req, res) => {
     // 🔐 Generate APIKEY SERVER
     const apikeyServer = md5(process.env.SERVER_KEY + uuid + deviceId);
     const hash = crypto
-      .createHmac("sha256", process.env.SERVER_KEY)
+      .createHmac("sha256", key)
       .update(apikeyServer)
       .digest("hex");
 
@@ -661,53 +710,6 @@ const validasiTokenV2 = async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.json({ success: false, msg: "error server" });
-  }
-};
-const validasiToken = async (req, res) => {
-  try {
-    let token = req.body.token;
-    let uuid = req.body.uuid;
-    let appid = "app:" + uuid;
-    let state = true;
-
-    jwt.verify(token, process.env.SECRET, function (err, decoded) {
-      if (err) {
-        state = false;
-        res.json({ success: false, msg: "Token Anda  tidak Valid 1" });
-        return;
-      }
-    });
-    if (state == true) {
-      let cekdata = await api.post("/api/reseller/check-deviceid", {
-        sender: appid,
-        id: appid,
-        type: "APP",
-      });
-      if (cekdata.data.registered) {
-        var user = {
-          idreseller: cekdata.data.resellerId,
-          namareseller: cekdata.data.resellerName,
-          uuid,
-        };
-        var newtoken = jwt.sign(user, process.env.SECRET, {
-          expiresIn: "1d",
-        });
-      }
-      let secretKey = md5(process.env.SECRET + uuid).toLowerCase();
-      res.json({
-        success: true,
-        idreseller: cekdata.data.resellerId,
-        namareseller: cekdata.data.resellerNamer,
-        token: newtoken,
-        kodereferral: cekdata.data.referralCode,
-        uuid,
-        secretKey,
-      });
-    }
-  } catch (err) {
-    console.log(err);
-    res.json({ success: false, msg: "Token Anda  tidak Valid 3" });
-    return;
   }
 };
 
