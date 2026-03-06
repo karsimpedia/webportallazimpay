@@ -1,15 +1,11 @@
 const prisma = require("../lib/prisma");
-const {
-  renderTemplate,
-  wrapText,
-  formatRp,
-} = require("../utils/receiptRenderer");
+const { renderTemplate } = require("../utils/receiptRenderer");
 const api = require("../lib/serverUtamaClient");
-var utilirs = require("./utils_v9");
-const pad = require("utils-pad-string");
+const { buildPlnPrepaidReceipt } = require("../utils/receiptBuilder");
+const { cleanEscposText } = require("../utils/receiptFormatter");
+
 // ===============================
 // CREATE TEMPLATE
-// POST /admin/receipt-template
 // ===============================
 exports.createTemplate = async (req, res) => {
   try {
@@ -26,6 +22,7 @@ exports.createTemplate = async (req, res) => {
     const exist = await prisma.receiptTemplate.findUnique({
       where: { code: normalizedCode },
     });
+
     if (exist) {
       return res
         .status(400)
@@ -51,19 +48,19 @@ exports.createTemplate = async (req, res) => {
 
 // ===============================
 // LIST TEMPLATES
-// GET /admin/receipt-template
 // ===============================
 exports.listTemplates = async (req, res) => {
   try {
     const { q, active } = req.query;
-
     const where = {};
+
     if (q) {
       where.OR = [
         { code: { contains: String(q).toUpperCase() } },
         { title: { contains: String(q), mode: "insensitive" } },
       ];
     }
+
     if (active === "true") where.isActive = true;
     if (active === "false") where.isActive = false;
 
@@ -83,13 +80,13 @@ exports.listTemplates = async (req, res) => {
 
     res.json({ success: true, templates });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, msg: "Gagal ambil template" });
   }
 };
 
 // ===============================
 // GET TEMPLATE BY ID
-// GET /admin/receipt-template/:id
 // ===============================
 exports.getTemplateById = async (req, res) => {
   try {
@@ -99,20 +96,21 @@ exports.getTemplateById = async (req, res) => {
       where: { id },
     });
 
-    if (!tpl)
+    if (!tpl) {
       return res
         .status(404)
         .json({ success: false, msg: "Template tidak ditemukan" });
+    }
 
     res.json({ success: true, data: tpl });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, msg: "Error" });
   }
 };
 
 // ===============================
 // UPDATE TEMPLATE
-// PUT /admin/receipt-template/:id
 // ===============================
 exports.updateTemplate = async (req, res) => {
   try {
@@ -120,31 +118,37 @@ exports.updateTemplate = async (req, res) => {
     const { code, title, description, template, isActive } = req.body;
 
     const existing = await prisma.receiptTemplate.findUnique({ where: { id } });
-    if (!existing)
+
+    if (!existing) {
       return res
         .status(404)
         .json({ success: false, msg: "Template tidak ditemukan" });
+    }
 
     const data = {};
 
-    // kalau code diubah, harus unik
     if (code != null) {
       const normalizedCode = String(code).trim().toUpperCase();
+
       if (normalizedCode !== existing.code) {
         const dup = await prisma.receiptTemplate.findUnique({
           where: { code: normalizedCode },
         });
-        if (dup)
+
+        if (dup) {
           return res
             .status(400)
             .json({ success: false, msg: "code template sudah dipakai" });
+        }
       }
+
       data.code = normalizedCode;
     }
 
     if (title != null) data.title = String(title).trim();
-    if (description !== undefined)
+    if (description !== undefined) {
       data.description = description ? String(description) : null;
+    }
     if (template != null) data.template = String(template);
     if (typeof isActive === "boolean") data.isActive = isActive;
 
@@ -162,29 +166,29 @@ exports.updateTemplate = async (req, res) => {
 
 // ===============================
 // DELETE TEMPLATE
-// DELETE /admin/receipt-template/:id
 // ===============================
 exports.deleteTemplate = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
     const existing = await prisma.receiptTemplate.findUnique({ where: { id } });
-    if (!existing)
+
+    if (!existing) {
       return res
         .status(404)
         .json({ success: false, msg: "Template tidak ditemukan" });
+    }
 
     await prisma.receiptTemplate.delete({ where: { id } });
     res.json({ success: true, msg: "Template dihapus" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, msg: "Delete gagal" });
   }
 };
 
 // ===============================
-// PREVIEW TEMPLATE (render text)
-// POST /admin/receipt-template/:id/preview
-// body: { variables: {...}, width?: 32 }
+// PREVIEW TEMPLATE
 // ===============================
 exports.previewTemplate = async (req, res) => {
   try {
@@ -193,30 +197,27 @@ exports.previewTemplate = async (req, res) => {
     const variables = req.body.variables || {};
 
     const tpl = await prisma.receiptTemplate.findUnique({ where: { id } });
-    if (!tpl)
+
+    if (!tpl) {
       return res
         .status(404)
         .json({ success: false, msg: "Template tidak ditemukan" });
+    }
 
     const receipt = renderTemplate(tpl.template, variables);
+
     res.json({
       success: true,
-      receipt: receipt, // text final
+      receipt,
       meta: { width },
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, msg: "Preview gagal" });
   }
 };
 
-// ===============================
-// RECEIPT BY TRANSACTION (pakai template code)
-// GET /admin/receipt
-// (mapping template berdasarkan trx.productId / kodeproduk)
-// ===============================
-
 async function getTemplateWithFallback(productCode, categoryCode) {
-  // 1️⃣ Exact Product Code (PLN50)
   if (productCode) {
     const tplProduct = await prisma.receiptTemplate.findFirst({
       where: { code: productCode, isActive: true },
@@ -224,7 +225,6 @@ async function getTemplateWithFallback(productCode, categoryCode) {
     if (tplProduct) return tplProduct;
   }
 
-  // 2️⃣ Category Code (PLN)
   if (categoryCode) {
     const tplCategory = await prisma.receiptTemplate.findFirst({
       where: { code: categoryCode, isActive: true },
@@ -232,14 +232,12 @@ async function getTemplateWithFallback(productCode, categoryCode) {
     if (tplCategory) return tplCategory;
   }
 
-  // 3️⃣ DEFAULT
   const tplDefault = await prisma.receiptTemplate.findFirst({
     where: { code: "DEFAULT", isActive: true },
   });
 
   if (tplDefault) return tplDefault;
 
-  // 4️⃣ Hard fallback
   return {
     id: 0,
     code: "HARD_DEFAULT",
@@ -255,26 +253,48 @@ Tujuan  : {{customer}}
 Total   : {{total}}
 Status  : {{status}}
 --------------------------------
-Terima kasih 🙏
+Terima kasih
 `,
   };
 }
 
+function formatRp(n) {
+  const num = Number(n || 0);
+  return "Rp " + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+function formatDateSafe(date) {
+  const d = new Date(date);
+  return (
+    d.getDate().toString().padStart(2, "0") +
+    "/" +
+    (d.getMonth() + 1).toString().padStart(2, "0") +
+    "/" +
+    d.getFullYear() +
+    " " +
+    d.getHours().toString().padStart(2, "0") +
+    ":" +
+    d.getMinutes().toString().padStart(2, "0")
+  );
+}
+
+// ===============================
+// RECEIPT BY TRANSACTION
+// ===============================
 exports.getReceiptByTransaction = async (req, res) => {
   try {
-    const app = "082211108088"; // semnetra biar engk eror
+    const app = "082211108088";
     const { idtrx, jasaloket = 3000 } = req.body;
+
+    if (!idtrx) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "idtrx wajib diisi" });
+    }
+
     const response = await api.get(`/api/transactions/${idtrx}`, {
       params: { sender: app },
     });
-
-    let jl = 0;
-
-    if (jasaloket === "2000" || jasaloket === "") {
-      jl = 3000;
-    } else {
-      jl = jasaloket;
-    }
 
     if (!response?.data?.success) {
       return res
@@ -283,31 +303,19 @@ exports.getReceiptByTransaction = async (req, res) => {
     }
 
     const trx = response.data.data;
+
     if (!trx) {
       return res
         .status(404)
         .json({ success: false, msg: "Data transaksi kosong" });
     }
 
-    // ===============================
-    // Tentukan template code
-    // ===============================
-
     const productCode = trx.product?.code?.toUpperCase();
     const categoryCode = trx.product?.category?.code?.toUpperCase();
-
     const tpl = await getTemplateWithFallback(productCode, categoryCode);
 
-    // ===============================
-    // Format Helper
-    // ===============================
-    const formatRp = (n) => {
-      const num = Number(n || 0);
-      return "Rp " + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    };
-    // ===============================
-    // Hitung Total Berdasarkan Jenis
-    // ===============================
+    let jl = Number(jasaloket || 3000);
+    if (Number.isNaN(jl)) jl = 3000;
 
     const amountDueNum = Number(trx.amountDue || 0);
     const adminFeeNum = Number(trx.adminFee || 0);
@@ -317,26 +325,18 @@ exports.getReceiptByTransaction = async (req, res) => {
     let totalFinal = 0;
 
     if (trx.type === "TAGIHAN_PAY") {
-      // PPOB
       totalFinal = amountDueNum + adminFeeNum + jasaLoketNum;
     } else if (
       trx.type === "EWALLET_PAY" ||
-      trx.type === "TRANSFER_BANK_PAY "
+      trx.type === "TRANSFER_BANK_PAY"
     ) {
       totalFinal = openAmount + jasaLoketNum;
     } else {
-      // Non PPOB (TOPUP, dll)
       totalFinal = amountDueNum + jasaLoketNum;
     }
 
-    // ===============================
-    // Extract Supplier Result Safe
-    // ===============================
     const supplier = trx.supplierResult || {};
 
-    // ===============================
-    // Extract PLN Info dari Serial
-    // ===============================
     let token = "";
     let customerName = "";
     let tarifDaya = "";
@@ -344,52 +344,29 @@ exports.getReceiptByTransaction = async (req, res) => {
     let periode = "";
     let tagihan = "";
 
-    function formatDateSafe(date) {
-      const d = new Date(date);
-      return (
-        d.getDate().toString().padStart(2, "0") +
-        "/" +
-        (d.getMonth() + 1).toString().padStart(2, "0") +
-        "/" +
-        d.getFullYear() +
-        " " +
-        d.getHours().toString().padStart(2, "0") +
-        ":" +
-        d.getMinutes().toString().padStart(2, "0")
-      );
-    }
-
-    // Parsing serial PLN: TOKEN/NAMA/TARIF/KWH
     if (trx.serial) {
-      const parts = trx.serial.split("/");
+      const parts = String(trx.serial).split("/");
 
-      if (parts.length >= 4) {
-        token = parts[0] || "";
-        customerName = parts[1] || "";
-        tarifDaya = parts[2] + "/" + parts[3] || "";
-        kwh = parts[4] || "";
-      }
+      token = parts[0] || "";
+      customerName = parts[1] || "";
+
+      const tarif = parts[2] || "";
+      const daya = parts[3] || "";
+      tarifDaya = [tarif, daya].filter(Boolean).join(" / ");
+
+      kwh = parts[4] || "";
     }
 
-    // Override jika supplierResult punya data lebih valid
     customerName = supplier.customerName || customerName;
     periode = supplier.periode || "";
     tagihan = supplier.tagihan ? formatRp(supplier.tagihan) : "";
-
-    // ===============================
-    // Tambahan variable pintar
-    // ===============================
 
     const isPPOB = trx.type === "TAGIHAN_PAY";
     const isTopup = trx.type === "TOPUP";
     const isEwallet =
       trx.type === "EWALLET_PAY" || trx.type === "TRANSFER_BANK_PAY";
 
-    // ===============================
-    // Mapping Variables FINAL
-    // ===============================
     const vars = {
-      // Basic
       invoice: trx.invoiceId || "",
       date: formatDateSafe(trx.createdAt),
 
@@ -399,114 +376,62 @@ exports.getReceiptByTransaction = async (req, res) => {
       customer: trx.msisdn || "",
       sn: trx.serial || "",
 
-      // Financial
       price: formatRp(trx.sellPrice),
       amountDue: formatRp(amountDueNum),
       adminFee: formatRp(adminFeeNum),
       jasaLoket: formatRp(jasaLoketNum),
       total: formatRp(totalFinal),
 
-      // Status
       status: trx.status || "",
       note: trx.note || "",
 
-      // PLN Specific
       token,
       customerName,
       tarifDaya,
       kwh,
 
-      // PDAM Specific
       periode,
       tagihan,
 
-      // Extra Smart Flags
       type: trx.type || "",
       isPPOB,
       isTopup,
       isEwallet,
     };
 
-    let sn = trx.serial;
-    // var strukPLN =
-    //   "STRUK PEMBELIAN PLN PRABAYAR\n\n" +
-    //   "\nWaktu       :" +
-    //   formatDateSafe(trx.createdAt) +
-    //   "\nNo.METER    :" +
-    //   trx.msisdn +
-    //   "\nNAMA        :" +
-    //   sn.split("/")[1] +
-    //   "\nTD          :" +
-    //   sn.split("/")[2] +
-    //   "/" +
-    //   sn.split("/")[3] +
-    //   "\nKWH         :" +
-    //   sn.split("/")[4] +
-    //   //"\nKWH         :" + sn.split("/KWH:")[1].split("/")[0] +
+    let receiptText = "";
+    let previewText = "";
+    let rawBase64 = null;
+    let printMode = "TEXT_ONLY";
 
-    //   //"\nMATERRAI    :RP " + pad(utilirs.todesimal(materai).toString(), 12, { lpad: "." }) +
-    //   "\nNOMINAL     :Rp " +
-    //   pad(utilirs.todesimal(amountDueNum).toString(), 12, { lpad: "." }) +
-    //   "\nJASA LOKET  :Rp " +
-    //   pad(utilirs.todesimal(jasaloket).toString(), 12, { lpad: "." }) +
-    //   "\nBAYAR       :Rp " +
-    //   pad(utilirs.todesimal(totalFinal).toString(), 12, { lpad: "." }) +
-    //   "\n\n        STROOM/TOKEN " +
-    //   "\n   " +
-    //   sn.split("/")[0] +      
-      
-    //   "\n\nStruk ini merupakan bukti" +
-    //   "\npembayaran yang sah" +
-    //   "\nLebih lanjut hubungi PLN 123\n" +
-    //   "\nTERIMA KASIH\r\n" +
-    //   "\n\nLazimPay - https://lazimpay.com\r\n";
+    const productNameUpper = String(trx.product?.name || "").toUpperCase();
+    const categoryCodeUpper = String(trx.product?.category?.code || "").toUpperCase();
 
+    const isPlnPrepaid =
+      categoryCodeUpper === "PLN" &&
+      productNameUpper.includes("TOKEN");
 
-
-
-    function prepareForEscpos(text, width = 32, maxLength = 700) {
-      let cleaned = text
-        .replace(/[^\x00-\x7F]/g, "")
-        .replace(/\r/g, "")
-        .replace(/\t/g, " ")
-        .split("\n")
-        .map((line) => {
-          if (line.length <= width) return line;
-
-          const chunks = [];
-          for (let i = 0; i < line.length; i += width) {
-            chunks.push(line.slice(i, i + width));
-          }
-          return chunks.join("\n");
-        })
-        .join("\n");
-
-      // hapus newline kosong berlebihan
-      cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
-
-      // batasi total panjang
-      if (cleaned.length > maxLength) {
-        cleaned = cleaned.slice(0, maxLength);
-      }
-
-      return cleaned;
+    if (isPlnPrepaid) {
+      const built = buildPlnPrepaidReceipt(vars);
+      receiptText = built.plainText;
+      previewText = built.previewText;
+      rawBase64 = built.rawBase64;
+      printMode = built.mode;
+    } else {
+      receiptText = cleanEscposText(renderTemplate(tpl.template, vars));
+      previewText = receiptText;
     }
 
-    // ===============================
-    // Render Template
-    // ===============================
-    let receiptText = renderTemplate(tpl.template, vars);
+    console.log(JSON.stringify({ receiptText, printMode }));
 
-    receiptText = prepareForEscpos(receiptText, 32);
-    receiptText += "\n\n\n";
-
-
-    console.log(JSON.stringify(receiptText));
     res.json({
       success: true,
       code: tpl.code,
       templateId: tpl.id,
       receipt: receiptText,
+      preview: previewText,
+      rawBase64,
+      printMode,
       variablesUsed: vars,
       msg: receiptText,
     });
