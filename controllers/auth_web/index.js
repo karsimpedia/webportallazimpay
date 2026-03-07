@@ -1,3 +1,5 @@
+
+require("dotenv").config();
 const utilirs = require("../utils_v9");
 const jwt = require("jsonwebtoken");
 const prisma = require("../../lib/prisma.js");
@@ -6,12 +8,11 @@ const axios = require("axios");
 const { sendOtp } = require("../../lib/sendOtp.js");
 var newOTP = require("otp-generators");
 const crypto = require("crypto");
-
 const api = require("../../lib/serverUtamaClient.js");
+const admin = require("firebase-admin");
 
-require("dotenv").config();
 
-var admin = require("firebase-admin");
+
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(require("../../firebase-key.json")),
@@ -20,58 +21,98 @@ if (!admin.apps.length) {
 
 const sendPush = async (req, res) => {
   try {
-    const { uuid, title, pesan } = req.query;
+    const {uuid, title, pesan} = {
+      ...(req.query || {}),
+      ...(req.body || {}),
+    };
 
     if (!uuid || !title || !pesan) {
       return res.status(400).json({
         success: false,
-        msg: "uuid, title dan pesan wajib diisi",
+        msg: 'uuid, title dan pesan wajib diisi',
       });
     }
 
-    // Ambil device berdasarkan appid
+    const appid = 'app:' + uuid;
+
     const devices = await prisma.fcmDevice.findMany({
-      where: {
-        appid: uuid,
-      },
+      where: { appid },
       select: {
         regtoken: true,
+        deviceId: true,
       },
     });
 
-    console.log(devices);
     if (!devices.length) {
       return res.status(404).json({
         success: false,
-        msg: "Device tidak ditemukan",
+        msg: 'Device tidak ditemukan',
       });
     }
 
-    // Kirim ke semua device user tsb
-    const tokens = devices.map((d) => d.regtoken);
+    const tokens = [...new Set(devices.map(d => d.regtoken).filter(Boolean))];
+
+    if (!tokens.length) {
+      return res.status(404).json({
+        success: false,
+        msg: 'Token kosong',
+      });
+    }
 
     const message = {
       notification: {
-        title,
-        body: pesan,
+        title: String(title),
+        body: String(pesan),
       },
-      tokens, // multiple send
+      data: {
+        uuid: String(uuid),
+        title: String(title),
+        pesan: String(pesan),
+      },
+      android: {
+        priority: 'high',
+      },
+      tokens,
     };
 
     const response = await admin.messaging().sendEachForMulticast(message);
 
-    console.log("Push success:", response.successCount);
+    const invalidCodes = [
+      'messaging/invalid-registration-token',
+      'messaging/registration-token-not-registered',
+    ];
+
+    const invalidTokens = response.responses
+      .map((r, i) => {
+        if (!r.success && invalidCodes.includes(r.error?.code)) {
+          return tokens[i];
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    if (invalidTokens.length) {
+      await prisma.fcmDevice.deleteMany({
+        where: {
+          regtoken: {
+            in: invalidTokens,
+          },
+        },
+      });
+    }
 
     return res.json({
       success: true,
+      total: tokens.length,
       sent: response.successCount,
       failed: response.failureCount,
+      invalidRemoved: invalidTokens.length,
     });
   } catch (error) {
-    console.error("FCM error:", error);
+    console.error('FCM error:', error);
     return res.status(500).json({
       success: false,
-      msg: "Error sending message",
+      msg: error?.message || 'Error sending message',
     });
   }
 };

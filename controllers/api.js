@@ -72,19 +72,19 @@ controllerX.getinfo = async (req, res) => {
 };
 controllerX.regtoken = async (req, res) => {
   console.log(req.body);
+
   try {
-    const { uuid, regid, deviceId, platform = "android" } = req.body;
+    const {uuid, regid, deviceId, platform = 'android'} = req.body;
 
     if (!uuid || !regid || !deviceId) {
       return res.json({
         success: false,
-        msg: "uuid, regid, deviceId wajib diisi",
+        msg: 'uuid, regid, deviceId wajib diisi',
       });
     }
 
-    const appid = "app:" + uuid;
+    const appid = 'app:' + uuid;
 
-    // Upsert berdasarkan appid + deviceId
     const device = await prisma.fcmDevice.upsert({
       where: {
         appid_deviceId: {
@@ -104,16 +104,16 @@ controllerX.regtoken = async (req, res) => {
       },
     });
 
-    res.json({
+    return res.json({
       success: true,
-      msg: "Token registered",
+      msg: 'Token registered',
       device,
     });
   } catch (error) {
-    console.error("REGTOKEN ERROR:", error);
-    res.json({
+    console.error('REGTOKEN ERROR:', error);
+    return res.json({
       success: false,
-      msg: "error register",
+      msg: error?.message || 'error register',
     });
   }
 };
