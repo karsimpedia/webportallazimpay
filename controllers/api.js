@@ -7,6 +7,7 @@ const S = require("string");
 const axios = require("axios");
 const pad = require("utils-pad-string");
 const crypto = require("crypto");
+const prisma = require("../lib/prisma.js");;
 const api = require("../lib/serverUtamaClient");
 
 controllerX.gantiKodeReferral = async (req, res) => {
