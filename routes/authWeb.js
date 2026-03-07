@@ -52,6 +52,7 @@ router.post("/deposit-kode-unik-bank-linkqu", getDepositByCategory("UNIQUE_TRANS
 router.post("/register", RegisterUSer);
 router.post("/callback-linkqu", callBackLinqu);
 router.get("/sendpush", sendPush);
+router.post("/sendpush", sendPush);
 
 router.post("/omni/list", omnichannel.getProduct);
 router.post("/omni/order", omnichannel.Purchase);
