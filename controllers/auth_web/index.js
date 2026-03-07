@@ -23,21 +23,20 @@ const sendPush = async (req, res) => {
   try {
 
 
-    
-    const {uuid, title, pesan} = {
+
+    const {appid, title, pesan} = {
       ...(req.query || {}),
       ...(req.body || {}),
     };
 
-    if (!uuid || !title || !pesan) {
+    if (!appid || !title || !pesan) {
       return res.status(400).json({
         success: false,
         msg: 'uuid, title dan pesan wajib diisi',
       });
     }
 
-    const appid = 'app:' + uuid;
-
+   
     const devices = await prisma.fcmDevice.findMany({
       where: { appid },
       select: {
