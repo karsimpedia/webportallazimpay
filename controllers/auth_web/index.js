@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const utilirs = require("../utils_v9");
 const jwt = require("jsonwebtoken");
@@ -11,8 +10,6 @@ const crypto = require("crypto");
 const api = require("../../lib/serverUtamaClient.js");
 const admin = require("firebase-admin");
 
-
-
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(require("../../firebase-key.json")),
@@ -21,10 +18,7 @@ if (!admin.apps.length) {
 
 const sendPush = async (req, res) => {
   try {
-
-
-
-    const {appid, title, pesan} = {
+    const { appid, title, pesan, image } = {
       ...(req.query || {}),
       ...(req.body || {}),
     };
@@ -32,11 +26,10 @@ const sendPush = async (req, res) => {
     if (!appid || !title || !pesan) {
       return res.status(400).json({
         success: false,
-        msg: 'appid, title dan pesan wajib diisi',
+        msg: "appid, title dan pesan wajib diisi",
       });
     }
 
-   
     const devices = await prisma.fcmDevice.findMany({
       where: { appid },
       select: {
@@ -48,32 +41,38 @@ const sendPush = async (req, res) => {
     if (!devices.length) {
       return res.status(404).json({
         success: false,
-        msg: 'Device tidak ditemukan',
+        msg: "Device tidak ditemukan",
       });
     }
 
-    const tokens = [...new Set(devices.map(d => d.regtoken).filter(Boolean))];
+    const tokens = [...new Set(devices.map((d) => d.regtoken).filter(Boolean))];
 
     if (!tokens.length) {
       return res.status(404).json({
         success: false,
-        msg: 'Token kosong',
+        msg: "Token kosong",
       });
     }
+
+    const imageUrl = image ? String(image).trim() : "";
 
     const message = {
       notification: {
         title: String(title),
         body: String(pesan),
+        ...(imageUrl ? { imageUrl } : {}),
       },
-      data: { 
-        page: "detail",   
+      data: {
+        page: "detail",
         title: String(title),
         pesan: String(pesan),
-
+        ...(imageUrl ? { image: imageUrl } : {}),
       },
       android: {
-        priority: 'high',
+        priority: "high",
+        notification: {
+          ...(imageUrl ? { imageUrl } : {}),
+        },
       },
       tokens,
     };
@@ -81,8 +80,8 @@ const sendPush = async (req, res) => {
     const response = await admin.messaging().sendEachForMulticast(message);
 
     const invalidCodes = [
-      'messaging/invalid-registration-token',
-      'messaging/registration-token-not-registered',
+      "messaging/invalid-registration-token",
+      "messaging/registration-token-not-registered",
     ];
 
     const invalidTokens = response.responses
@@ -112,10 +111,10 @@ const sendPush = async (req, res) => {
       invalidRemoved: invalidTokens.length,
     });
   } catch (error) {
-    console.error('FCM error:', error);
+    console.error("FCM error:", error);
     return res.status(500).json({
       success: false,
-      msg: error?.message || 'Error sending message',
+      msg: error?.message || "Error sending message",
     });
   }
 };
@@ -149,7 +148,7 @@ function createNewOTP(phone) {
   // you have to implement the function to send SMS yourself. For demo purpose. let's assume it's called sendSMS
   // sendSMS(phone, `Your O T P is ${otp}. it will expire in 5 minutes lazimpay`);
   console.log("otp dev", otp);
-  sendSMS(phone, otp );
+  sendSMS(phone, otp);
   return fullHash;
 }
 
@@ -241,7 +240,7 @@ const loginByPhoneV2 = async (req, res) => {
   try {
     var hp = req.body.nohp;
     var pin = req.body.pin;
-console.log(req.body)
+    console.log(req.body);
     if (hp == undefined || pin == undefined) {
       res.json({
         success: false,
@@ -466,7 +465,7 @@ const otpVerifyV2 = async (req, res) => {
         var user = {
           idreseller: idreseller,
           namareseller: cekdata.data.resellerName,
-          phone: phone
+          phone: phone,
         };
 
         //res.json({ success: true, otp: false, msg: "login sukses" });
@@ -693,7 +692,6 @@ const validasiToken = async (req, res) => {
   }
 };
 
-
 const validasiTokenV2 = async (req, res) => {
   try {
     const { token, uuid, deviceId, apikey } = req.body;
@@ -715,7 +713,10 @@ const validasiTokenV2 = async (req, res) => {
     try {
       decoded = jwt.verify(token, process.env.SECRET);
     } catch (err) {
-      return res.json({ success: false, msg: "Token Anda tidak valid / expired" });
+      return res.json({
+        success: false,
+        msg: "Token Anda tidak valid / expired",
+      });
     }
 
     console.log("TOKEN DECODE:", decoded);
@@ -750,7 +751,6 @@ const validasiTokenV2 = async (req, res) => {
       uuid,
       apikey: hash,
     });
-
   } catch (err) {
     console.log(err);
     return res.json({ success: false, msg: "error server" });
