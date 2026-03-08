@@ -32,7 +32,7 @@ const sendPush = async (req, res) => {
     if (!appid || !title || !pesan) {
       return res.status(400).json({
         success: false,
-        msg: 'uuid, title dan pesan wajib diisi',
+        msg: 'appid, title dan pesan wajib diisi',
       });
     }
 
@@ -66,10 +66,11 @@ const sendPush = async (req, res) => {
         title: String(title),
         body: String(pesan),
       },
-      data: {
-        uuid: String(uuid),
+      data: { 
+        page: "detail",   
         title: String(title),
         pesan: String(pesan),
+
       },
       android: {
         priority: 'high',

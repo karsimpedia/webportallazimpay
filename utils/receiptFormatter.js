@@ -158,7 +158,7 @@ function cleanText(text, maxLength = 2000) {
 }
 
 function cleanEscposText(text, maxLength = 2000) {
-  return cleanText(text, maxLength) + "\n\n\n";
+  return cleanText(text, maxLength) + "\n";
 }
 
 module.exports = {
