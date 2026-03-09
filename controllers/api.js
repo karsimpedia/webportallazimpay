@@ -7,8 +7,9 @@ const S = require("string");
 const axios = require("axios");
 const pad = require("utils-pad-string");
 const crypto = require("crypto");
-const prisma = require("../lib/prisma.js");;
+const prisma = require("../lib/prisma.js");
 const api = require("../lib/serverUtamaClient");
+const { tryEach } = require("async");
 
 controllerX.gantiKodeReferral = async (req, res) => {
   try {
@@ -75,16 +76,16 @@ controllerX.regtoken = async (req, res) => {
   console.log(req.body);
 
   try {
-    const {uuid, regid, deviceId, platform = 'android'} = req.body;
+    const { uuid, regid, deviceId, platform = "android" } = req.body;
 
     if (!uuid || !regid || !deviceId) {
       return res.json({
         success: false,
-        msg: 'uuid, regid, deviceId wajib diisi',
+        msg: "uuid, regid, deviceId wajib diisi",
       });
     }
 
-    const appid = 'app:' + uuid;
+    const appid = "app:" + uuid;
 
     const device = await prisma.fcmDevice.upsert({
       where: {
@@ -107,14 +108,14 @@ controllerX.regtoken = async (req, res) => {
 
     return res.json({
       success: true,
-      msg: 'Token registered',
+      msg: "Token registered",
       device,
     });
   } catch (error) {
-    console.error('REGTOKEN ERROR:', error);
+    console.error("REGTOKEN ERROR:", error);
     return res.json({
       success: false,
-      msg: error?.message || 'error register',
+      msg: error?.message || "error register",
     });
   }
 };
@@ -148,9 +149,13 @@ controllerX.cekidtokenpln = async (req, res) => {
       // msg: "akun tidak ditemukan",
     });
   } catch (error) {
-    console.log("DIGIFLAZZ ERROR BODY:", error.resp?.data)
-   
-    res.json({ success: false, data: error.resp?.data, msg: "Id tidak ditemukan" });
+    console.log("DIGIFLAZZ ERROR BODY:", error.resp?.data);
+
+    res.json({
+      success: false,
+      data: error.resp?.data,
+      msg: "Id tidak ditemukan",
+    });
     //res.json({ success: false, msg: "bisa langsung hit aja" });
   }
 };
@@ -509,7 +514,7 @@ controllerX.historitrx = async (req, res) => {
         status: item.statustext, // 👈 tambahan
       }));
     }
-    console.log(data);
+   
     return res.json(data);
   } catch (error) {
     console.error("proxy historiTrx:", error?.response?.data || error);
@@ -572,360 +577,6 @@ controllerX.historisaldo = async (req, res) => {
   }
 };
 
-controllerX.getmenuppob = async (req, res) => {
-  return res.json({ success: false, msg: "terjadi kesalahan" });
-  try {
-    let menux = await utilirs.runQuerySelectPromise(
-      req,
-      "select * from app_menu",
-    );
-    res.json({ success: true, data: menux });
-  } catch (error) {}
-};
-
-controllerX.getmenuppob_old = async (req, res) => {
-  return res.json({ success: false, msg: "terjadi kesalahan" });
-  /*
-    {
-        id: 1,
-        label: "Grosir",
-        images: "iconhppascax.png",
-        type: 11,
-        idoperator: 1,
-        kodeproduk: "Grosir",
-        home: true,
-        url: "www.youtube.com"
-    },
-    */
-  var menu = [
-    {
-      id: 1,
-      label: "Pulsa",
-      images: "iconhppascax.png",
-      type: 9,
-      idoperator: 1,
-      kodeproduk: "PULSA",
-      home: true,
-      url: "www.youtube.com",
-    },
-    {
-      id: 1,
-      label: "WARTO",
-      images: "iconwartox.png",
-      type: 1,
-      idoperator: 1,
-      kodeproduk: "ASA",
-      home: true,
-      url: "www.youtube.com",
-    },
-    {
-      id: 1,
-      label: "LISTRIK PLN",
-      images: "iconplnx.png",
-      type: 1,
-      idoperator: 1,
-      kodeproduk: "PLN",
-      home: true,
-      url: "www.youtube.com",
-    },
-    {
-      id: 1,
-      label: "BPJS",
-      images: "iconbpjsx.png",
-      type: 1,
-      idoperator: 1,
-      home: true,
-      kodeproduk: "BPJSKS",
-      url: "www.youtube.com",
-    },
-    {
-      id: 1,
-      label: "TELKOM",
-      images: "icontelkomx.png",
-      type: 1,
-      idoperator: 1,
-      kodeproduk: "TELKOM",
-      home: true,
-      url: "https://m.tiket.com",
-    },
-    {
-      id: 1,
-      label: "PDAM",
-      images: "iconpdamx.png",
-      type: 3,
-      idoperator: 1,
-      kodeproduk: "PDAM",
-      home: true,
-      url: "https://m.tiket.com",
-    },
-    {
-      id: 1,
-      label: "HP PASCA",
-      images: "iconhppascax.png",
-      type: 3,
-      idoperator: 73,
-      kodeproduk: "TELKOM",
-      home: true,
-      url: "https://m.bukalapak.com",
-    },
-    {
-      id: 1,
-      label: "TV Satelit",
-      images: "iconvouchertv.png",
-      type: 3,
-      idoperator: 72,
-      kodeproduk: "TELKOM",
-      home: true,
-      url: "https://m.bukalapak.com",
-    },
-    {
-      id: 1,
-      label: "Multifinance",
-      images: "iconhppascax.png",
-      type: 3,
-      idoperator: 71,
-      kodeproduk: "-",
-      home: true,
-      url: "https://m.bukalapak.com",
-    },
-    {
-      id: 1,
-      label: "Gas Negara",
-      images: "iconpgnx.png",
-      type: 1,
-      idoperator: 1,
-      kodeproduk: "PGN",
-      home: true,
-      url: "https://m.bukalapak.com",
-    },
-    {
-      id: 1,
-      label: "VoucherTV",
-      images: "iconvouchertv.png",
-      type: 2,
-      idoperator: "101,103",
-      kodeproduk: "TELKOM",
-      home: true,
-      url: "https://m.bukalapak.com",
-    },
-    {
-      id: 1,
-      label: "EMoney",
-      images: "iconemoneyx.png",
-      type: 4,
-      idoperator: "99,98,97,95,96",
-      kodeproduk: "TELKOM",
-      home: true,
-      url: "https://m.bukalapak.com",
-    },
-    {
-      id: 1,
-      label: "Price List",
-      images: "iconemoneyx.png",
-      type: 10,
-      idoperator: 1,
-      kodeproduk: "PRICELIST",
-      home: true,
-      url: "https://m.tiket.com",
-    },
-  ];
-
-  res.json({ success: true, data: menu });
-};
-
-controllerX.getva = async (req, res) => {
-  var uuid = "app:" + req.query.uuid;
-  return res.json({ success: false, msg: "terjadi kesalahan" });
-  var cekdata = await utilirs.runQuerySelectPromise(
-    req,
-    "select r.idreseller,r.namareseller,r.saldo,r.ipstatic,r.email,r.ipstatic,r.poin,r.komisi from masterreseller r left join hptrx h on r.idreseller=h.idreseller where aes_decrypt(h.hp,password((select jalurharga from info)))=?",
-    uuid,
-  );
-  if (cekdata.length > 0) {
-    var idreseller = cekdata[0].idreseller;
-    var name = cekdata[0].namareseller;
-    var regExpr = /[^a-zA-Z ]/g;
-    name = name.replace(regExpr, "");
-
-    try {
-      var headers = {
-        "User-Agent": "irs-9",
-        "Content-Type": "application/json",
-      };
-      var datapost = {
-        server_key: process.env.SERVER_KEY, //'SMdXxGnhie81MKlai8QRNlg81gp9snoMBLA9vNu99dgR9yhh3t9ZlACxCIe5S9',
-        customer_id: idreseller,
-        customer_name: name,
-      };
-
-      let resp = await axios.post(
-        "https://api.aviana.id:9192/partner/getva",
-        datapost,
-        { headers: headers, timeout: 10000 },
-      );
-      res.json(resp.data);
-    } catch (error) {
-      console.log(error);
-      res.json({ success: false, msg: error.code });
-    }
-  } else {
-    res.json({ success: false, msg: "akun tidak ditemukan" });
-  }
-};
-
-controllerX.cekdevice = async (req, res) => {
-  var uuid = "app:" + req.body.uuid;
-  var cekdata = await utilirs.runQuerySelectPromise(
-    req,
-    "select r.idreseller,r.namareseller,r.saldo,r.ipstatic,r.email,r.ipstatic,r.poin,r.komisi,r.namapemilik,r.province_id,r.city_id,r.district_id,r.kodepos from masterreseller r left join hptrx h on r.idreseller=h.idreseller where aes_decrypt(h.hp,password((select jalurharga from info)))=?",
-    uuid,
-  );
-  if (cekdata.length > 0) {
-    res.json({
-      success: true,
-      isnew: false,
-      idrs: cekdata[0].idreseller,
-      nama: cekdata[0].namareseller,
-      novtri: cekdata[0].ipstatic,
-      saldo: cekdata[0].saldo,
-      datars: cekdata[0],
-    });
-  } else {
-    res.json({ success: false, msg: "akun tidak ditemukan" });
-  }
-};
-
-controllerX.CekEsisting = async (req, res) => {
-  return res.json({ success: false, msg: "terjadi kesalahan" });
-  try {
-    var cekUser = await utilirs.runQuerySelectPromise(
-      req,
-      "SELECT r.idreseller FROM masterreseller r LEFT JOIN hptrx h ON r.idreseller=h.idreseller WHERE aes_decrypt(h.hp,password((select jalurharga from info)))=?",
-      [req.query.hp],
-    );
-    if (cekUser.length > 0) {
-      res.json({ success: true, msg: "valid" });
-    } else {
-      res.json({ success: false, msg: "nomor tidak terdaftar" });
-    }
-  } catch (error) {
-    console.log(error);
-    res.json({ success: false, msg: "terjadi kesalahan" });
-  }
-};
-
-controllerX.accountKit = async (req, res) => {
-  var uuid = "app:" + req.body.uuid;
-  var phone = req.body.phone;
-  var pin = req.body.pin;
-  var idreseller;
-
-  return res.json({ success: false, msg: "terjadi kesalahan" });
-  // console.log(req.body);
-  try {
-    pin = utilirs.deryptaes256(pin.trim());
-    var cekUser = await utilirs.runQuerySelectPromise(
-      req,
-      "SELECT r.idreseller,r.namareseller,r.saldo, r.blokir, r.komisi FROM masterreseller r LEFT JOIN hptrx h ON r.idreseller=h.idreseller WHERE aes_decrypt(h.hp,password((select jalurharga from info)))=? and r.pin=aes_encrypt(?,password((select jalurharga from info)))",
-      [phone, pin],
-    );
-    if (cekUser.length > 0) {
-      if (cekUser[0].blokir == 1) {
-        res.json({
-          success: false,
-          msg: "Nomor HP telah diblokir",
-          rc: 13,
-        });
-        return;
-      } else {
-        idreseller = cekUser[0].idreseller;
-        var getProfile = await utilirs.runQuerySelectPromise(
-          req,
-          "SELECT r.idreseller,r.namareseller,r.saldo, r.blokir,r.* FROM masterreseller r LEFT JOIN hptrx h ON r.idreseller=h.idreseller WHERE h.hp=aes_encrypt(?,password((select jalurharga from info))) and h.tipe=4",
-          [uuid],
-        );
-        // console.log(getProfile);
-        if (getProfile.length > 0) {
-          res.json({
-            success: true,
-            rc: 0,
-            msg: "valid",
-            idrs: getProfile[0].idreseller,
-            namars: getProfile[0].namareseller,
-            datars: getProfile[0],
-            saldo: Intl.NumberFormat().format(getProfile[0].saldo),
-          });
-          return;
-        } else {
-          var getDevice = await utilirs.runQuerySelectPromise(
-            req,
-            "SELECT r.idreseller,r.namareseller,r.saldo, r.blokir FROM masterreseller r LEFT JOIN hptrx h ON r.idreseller=h.idreseller WHERE h.tipe=4 and r.idreseller = ?",
-            [idreseller],
-          );
-          // console.log(getDevice);
-          if (getDevice.length > 50) {
-            res.json({
-              success: false,
-              msg: "Anda tidak dapat menambahkan device Anda (MAX 5 Device)",
-              rc: 14,
-            });
-            return;
-          } else {
-            var insertHp = await utilirs.runQuerySelectPromise(
-              req,
-              "insert into hptrx value (0,?,aes_encrypt(?,password((select jalurharga from info))),4,0,1,now(),now())",
-              [idreseller, uuid],
-            );
-            // console.log(insertHp);
-            if (insertHp) {
-              var cekAgain = await utilirs.runQuerySelectPromise(
-                req,
-                "SELECT r.idreseller,r.namareseller,r.saldo, r.blokir,r.* FROM masterreseller r LEFT JOIN hptrx h ON r.idreseller=h.idreseller WHERE h.hp=aes_encrypt(?,password((select jalurharga from info))) and h.tipe=4",
-                [uuid],
-              );
-              if (cekAgain.length > 0) {
-                res.json({
-                  success: true,
-                  rc: "00",
-                  msg: "valid",
-                  idrs: cekAgain[0].idreseller,
-                  namars: cekAgain[0].namareseller,
-                  datars: cekAgain[0],
-                  saldo: Intl.NumberFormat().format(cekAgain[0].saldo),
-                });
-                return;
-              }
-            } else {
-              // console.log("error bosku");
-              res.json({
-                success: false,
-                msg: "terjadi kesalahan RC:99",
-                rc: 14,
-              });
-              return;
-            }
-          }
-        }
-      }
-    } else {
-      res.json({
-        success: false,
-        msg: "data tidak ditemukan",
-        rc: 12,
-      });
-      return;
-    }
-  } catch (error) {
-    console.log(error);
-    res.json({
-      success: false,
-      msg: "terjadi kesalahan",
-      rc: 99,
-    });
-    return;
-  }
-};
-
 controllerX.getme = async (req, res) => {
   var uuid = "app:" + req.query.uuid;
 
@@ -954,6 +605,23 @@ controllerX.getme = async (req, res) => {
     });
   } else {
     return res.json({ success: false, msg: "akun tidak ditemukan" });
+  }
+};
+
+controllerX.logoutApp = async (req, res) => {
+  var app = "app:" + req.body.uuid;
+  try {
+
+  
+    const req = await api.post("/reseller/logout-app", {
+      sender: app,
+      appId: app,
+    });
+
+    return res.json( {success: true,msg: "Logout Success" })
+  } catch (error) {
+    console.error("Logout error:", error?.response || error);
+    res.json({ success: false, msg: "Logout Gagal" });
   }
 };
 

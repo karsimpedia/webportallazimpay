@@ -121,11 +121,11 @@ TransactionController.payNow = async (req, res) => {
   }
 
   const finalNominal = parsedNominal;
-  const furl = "app:" + uuid;
+  const appid = "app:" + uuid;
 
   try {
     const response = await api.post("/api/trx/apk", {
-      sender: furl,
+      sender: appid,
       productCode: kodeproduk,
       tujuan: msisdn, // ⬅️ tujuan bersih
       idtrx,

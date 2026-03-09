@@ -3,6 +3,9 @@
 const jwt = require("jsonwebtoken");
 
 module.exports = function authJwt(req, res, next) {
+
+
+  
   const auth = req.headers.authorization;
   if (!auth) {
     return res.status(401).json({
@@ -22,6 +25,7 @@ module.exports = function authJwt(req, res, next) {
     }
 
     req.user = decoded;
+   
     // console.log(decoded)
     next();
   });

@@ -148,8 +148,7 @@ controllerX.TransferBalance = async (req, res) => {
         sender: uuid,
         downlineId: iddownline,
         amount: jumlah,
-        pin,
-        note: `Transfer saldo ke downline ${iddownline}`,
+        pin,        
       },
       {
         headers: {

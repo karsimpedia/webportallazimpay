@@ -148,6 +148,10 @@ function createNewOTP(phone) {
   // you have to implement the function to send SMS yourself. For demo purpose. let's assume it's called sendSMS
   // sendSMS(phone, `Your O T P is ${otp}. it will expire in 5 minutes lazimpay`);
   console.log("otp dev", otp);
+
+  if (phone == "081234567890") {
+    return fullHash;
+  }
   sendSMS(phone, otp);
   return fullHash;
 }
@@ -417,7 +421,7 @@ const otpVerifyV2 = async (req, res) => {
   try {
     // akun demo
     let hasil;
-    if (phone == "087870266669" && pin == "123456" && otp == "112233") {
+    if (phone == "081234567890" && pin == "123456" && otp == "112233") {
       hasil = true;
     } else hasil = verifyOTP(phone, hash, otp);
 

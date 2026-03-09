@@ -283,13 +283,11 @@ function formatDateSafe(date) {
 // ===============================
 exports.getReceiptByTransaction = async (req, res) => {
   try {
-    const app = "082211108088";
+    const app = "app:" + req.user.uuid;
     const { idtrx, jasaloket = 3000 } = req.body;
 
     if (!idtrx) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "idtrx wajib diisi" });
+      return res.status(400).json({ success: false, msg: "idtrx wajib diisi" });
     }
 
     const response = await api.get(`/api/transactions/${idtrx}`, {
@@ -326,10 +324,7 @@ exports.getReceiptByTransaction = async (req, res) => {
 
     if (trx.type === "TAGIHAN_PAY") {
       totalFinal = amountDueNum + adminFeeNum + jasaLoketNum;
-    } else if (
-      trx.type === "EWALLET_PAY" ||
-      trx.type === "TRANSFER_BANK_PAY"
-    ) {
+    } else if (trx.type === "EWALLET_PAY" || trx.type === "TRANSFER_BANK_PAY") {
       totalFinal = openAmount + jasaLoketNum;
     } else {
       totalFinal = amountDueNum + jasaLoketNum;
@@ -405,11 +400,12 @@ exports.getReceiptByTransaction = async (req, res) => {
     let printMode = "TEXT_ONLY";
 
     const productNameUpper = String(trx.product?.name || "").toUpperCase();
-    const categoryCodeUpper = String(trx.product?.category?.code || "").toUpperCase();
+    const categoryCodeUpper = String(
+      trx.product?.category?.code || "",
+    ).toUpperCase();
 
     const isPlnPrepaid =
-      categoryCodeUpper === "PLNPREPAID" &&
-      productNameUpper.includes("TOKEN");
+      categoryCodeUpper === "PLNPREPAID" && productNameUpper.includes("TOKEN");
 
     if (isPlnPrepaid) {
       const built = buildPlnPrepaidReceipt(vars);

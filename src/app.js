@@ -18,8 +18,8 @@ const errorHandler = require("../middlewares/errorHandler");
 const viewRoutes = require("../routes/view");
 const apiWeb = require("../routes/authWeb");
 const trxRoutes = require("../routes/api");
-const apk = require("../routes/apk")
-const admin = require("../routes/admin.routes")
+const apk = require("../routes/apk");
+const admin = require("../routes/admin.routes");
 
 const app = express();
 
@@ -34,8 +34,6 @@ app.use(corsConfig);
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: false }));
 
-
-
 // ================= COOKIE & STATIC =================
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "../public")));
@@ -47,11 +45,14 @@ app.set("view engine", "ejs");
 // ================= ROUTES =================
 app.use("/", viewRoutes);
 app.use("/api", apiWeb);
+
+
+
 app.use("/apk", apk);
 app.use("/admin", admin);
 // 🔐 INTERNAL / H2H
-// app.use(authIrs);
-app.use("/trx",  trxRoutes);
+
+app.use("/trx", authJwt, trxRoutes);
 // app.use("/trx",  trxRoutes); // testing no uth
 // ================= ERROR =================
 app.use(notFound);
