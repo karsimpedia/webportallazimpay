@@ -284,6 +284,8 @@ function formatDateSafe(date) {
 exports.getReceiptByTransaction = async (req, res) => {
   try {
     const app = "app:" + req.user.uuid;
+
+   
     const { idtrx, jasaloket = 3000 } = req.body;
 
     if (!idtrx) {
@@ -418,7 +420,7 @@ exports.getReceiptByTransaction = async (req, res) => {
       previewText = receiptText;
     }
 
-    console.log(JSON.stringify({ receiptText, printMode }));
+   
 
     res.json({
       success: true,

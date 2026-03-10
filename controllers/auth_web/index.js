@@ -442,7 +442,11 @@ const otpVerifyV2 = async (req, res) => {
         pin,
         type: "PHONE",
       });
+
+      
       let idreseller = login.data.resellerId;
+      let resellerName = login.data.resellerName
+      let referralCode = login.data.referralCode
       if (login.data.success) {
         var uuid = "app:" + uuidencoded;
         let cekdata = await api.post("/reseller/check-deviceid", {
@@ -451,6 +455,8 @@ const otpVerifyV2 = async (req, res) => {
           pin,
           type: "APP",
         });
+
+      
         if (!cekdata.data.registered) {
           let addDevice = await api.post("/reseller/add-deviceid", {
             sender: phone,
@@ -468,7 +474,8 @@ const otpVerifyV2 = async (req, res) => {
         }
         var user = {
           idreseller: idreseller,
-          namareseller: cekdata.data.resellerName,
+          namareseller: resellerName,
+          uuid: uuidencoded,
           phone: phone,
         };
 
@@ -481,8 +488,8 @@ const otpVerifyV2 = async (req, res) => {
           success: true,
           idreseller: idreseller,
           uuid: uuidencoded,
-          namareseller: cekdata.data.resellerName,
-          kodereferral: cekdata.data.referralCode,
+          namareseller: resellerName,
+          kodereferral: referralCode,
           token: token,
           apikey: Newhash,
         });
