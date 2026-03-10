@@ -353,7 +353,7 @@ exports.getReceiptByTransaction = async (req, res) => {
     }
 
     customerName = supplier.customerName || customerName;
-    periode = supplier.periode || "";
+    periode = supplier.period || supplier.periode || "";
     tagihan = supplier.tagihan ? formatRp(supplier.tagihan) : "";
 
     const isPPOB = trx.type === "TAGIHAN_PAY";
