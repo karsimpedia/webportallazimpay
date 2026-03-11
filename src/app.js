@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 const responseTime = require("response-time");
 const bodyParser = require("body-parser");
 require("dotenv").config();
-
+const { startTrxSocketClient } = require("../lib/trxSocketClient");
 // middlewares
 const corsConfig = require("../config/cors");
 const authIrs = require("../middlewares/authIrs");
@@ -55,6 +55,8 @@ app.use("/admin", admin);
 app.use("/trx", authJwt, trxRoutes);
 // app.use("/trx",  trxRoutes); // testing no uth
 // ================= ERROR =================
+
+startTrxSocketClient();
 app.use(notFound);
 app.use(errorHandler);
 

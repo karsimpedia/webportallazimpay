@@ -47,6 +47,7 @@
     "otp-generators": "^1.0.3",
     "path": "^0.12.7",
     "response-time": "^2.3.2",
+    "socket.io-client": "^4.8.3",
     "string": "^3.3.3",
     "utils-pad-string": "^1.0.0",
     "uuid": "^8.3.2"

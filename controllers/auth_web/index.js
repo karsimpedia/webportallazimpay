@@ -1,5 +1,4 @@
 require("dotenv").config();
-const utilirs = require("../utils_v9");
 const jwt = require("jsonwebtoken");
 const prisma = require("../../lib/prisma.js");
 const md5 = require("md5");
@@ -8,6 +7,7 @@ const { sendOtp } = require("../../lib/sendOtp.js");
 var newOTP = require("otp-generators");
 const crypto = require("crypto");
 const api = require("../../lib/serverUtamaClient.js");
+
 const admin = require("firebase-admin");
 
 if (!admin.apps.length) {
@@ -16,12 +16,40 @@ if (!admin.apps.length) {
   });
 }
 
+const toStr = (v, def = "") => {
+  if (v === null || v === undefined) return def;
+  return String(v);
+};
+
 const sendPush = async (req, res) => {
   try {
-    const { appid, title, pesan, image } = {
+    const body = {
       ...(req.query || {}),
       ...(req.body || {}),
     };
+
+    const {
+      appid,
+      title,
+      pesan,
+      image,
+
+      page = "detail",
+      trxId = "",
+      invoiceId = "",
+      status = "",
+      msisdn = "",
+      productCode = "",
+      resellerId = "",
+      sender = "",
+      sn = "",
+      amount = "",
+      openAmount = "",
+      amountDue = "",
+      supplierPrice = "",
+      message = "",
+      createdAt = "",
+    } = body;
 
     if (!appid || !title || !pesan) {
       return res.status(400).json({
@@ -31,7 +59,9 @@ const sendPush = async (req, res) => {
     }
 
     const devices = await prisma.fcmDevice.findMany({
-      where: { appid },
+      where: {
+        appid: toStr(appid),
+      },
       select: {
         regtoken: true,
         deviceId: true,
@@ -56,28 +86,47 @@ const sendPush = async (req, res) => {
 
     const imageUrl = image ? String(image).trim() : "";
 
-    const message = {
+    const messagePayload = {
       notification: {
-        title: String(title),
-        body: String(pesan),
+        title: toStr(title),
+        body: toStr(pesan),
         ...(imageUrl ? { imageUrl } : {}),
       },
       data: {
-        page: "detail",
-        title: String(title),
-        pesan: String(pesan),
+        page: toStr(page, "detail"),
+        title: toStr(title),
+        pesan: toStr(pesan),
+
+        trxId: toStr(trxId),
+        invoiceId: toStr(invoiceId),
+        status: toStr(status),
+        msisdn: toStr(msisdn),
+        productCode: toStr(productCode),
+        resellerId: toStr(resellerId),
+        sender: toStr(sender),
+        sn: toStr(sn),
+        amount: toStr(amount),
+        openAmount: toStr(openAmount),
+        amountDue: toStr(amountDue),
+        supplierPrice: toStr(supplierPrice),
+        message: toStr(message),
+        createdAt: toStr(createdAt),
+
         ...(imageUrl ? { image: imageUrl } : {}),
       },
       android: {
         priority: "high",
         notification: {
+          channelId: "default",
           ...(imageUrl ? { imageUrl } : {}),
         },
       },
       tokens,
     };
 
-    const response = await admin.messaging().sendEachForMulticast(message);
+    const response = await admin.messaging().sendEachForMulticast(
+      messagePayload
+    );
 
     const invalidCodes = [
       "messaging/invalid-registration-token",
@@ -105,10 +154,19 @@ const sendPush = async (req, res) => {
 
     return res.json({
       success: true,
-      total: tokens.length,
+      appid: toStr(appid),
+      totalDevice: devices.length,
+      totalToken: tokens.length,
       sent: response.successCount,
       failed: response.failureCount,
       invalidRemoved: invalidTokens.length,
+      dataSent: {
+        trxId: toStr(trxId),
+        invoiceId: toStr(invoiceId),
+        status: toStr(status),
+        msisdn: toStr(msisdn),
+        productCode: toStr(productCode),
+      },
     });
   } catch (error) {
     console.error("FCM error:", error);
@@ -117,6 +175,10 @@ const sendPush = async (req, res) => {
       msg: error?.message || "Error sending message",
     });
   }
+};
+
+module.exports = {
+  sendPush,
 };
 
 const key = process.env.SECRET; // Key for cryptograpy. Keep it secret
