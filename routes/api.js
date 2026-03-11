@@ -35,7 +35,7 @@ router.post("/receipt", ctrl.getReceiptByTransaction);
 
 router.get("/getme", api.getme);
 router.post("/logout-app", api.logoutApp);
-// router.post("/cekpin", api.cekPIN);
+router.post("/cekpin", api.cekPIN);
 // router.post("/cekdevice", api.cekdevice);
 // router.post("/cekregister", api.CekEsisting);
 // router.post("/accountKit", api.accountKit);

@@ -245,28 +245,26 @@ controllerX.updatekoordinat = async (req, res) => {
 };
 
 controllerX.cekPIN = async (req, res) => {
-  var uuid = "app:" + req.body.uuid;
+  var app = "app:" + req.body.uuid;
   var fpin = req.body.pin;
   // fpin = utilirs.deryptaes256(fpin);
 
   try {
-    var datars = await utilirs.runQuerySelectPromise(
-      req,
-      "select r.idreseller,r.namareseller,r.saldo,r.ipstatic,r.email,r.ipstatic,r.poin,r.komisi,r.patokanhargajual,r.tipe,r.blokir,r.alamatreseller from masterreseller r left join hptrx h on r.idreseller=h.idreseller where h.hp=aes_encrypt(?,password((select jalurharga from info))) and r.pin=aes_encrypt(?,password((select jalurharga from info)))",
-      [uuid, fpin],
-    );
-    if (datars.length > 0) {
-      var idreseller = datars[0].idreseller;
-      res.json({ success: true, msg: "valid" });
-    } else {
-      res.json({ success: false, msg: "PIN yang anda masukkan salah" });
+    const cekpin = await api.post("/reseller/check-pin", {
+      appid: app,
+      pin: fpin,
+      sender: app,
+    });
+
+    if (cekpin.data.success) {
+      res.json({ success: true, msg: cekpin.data.msg });
+      return;
     }
+
+    return res.json({ success: false, msg: cekpin.data.msg });
   } catch (error) {
     console.log(error);
-    res.json({
-      success: false,
-      msg: "Terjadi kesalahan, hubungi customerservice",
-    });
+    return res.json({ success: false, msg: "terjadi kesalahan" });
   }
 };
 
@@ -514,7 +512,7 @@ controllerX.historitrx = async (req, res) => {
         status: item.statustext, // 👈 tambahan
       }));
     }
-   
+
     return res.json(data);
   } catch (error) {
     console.error("proxy historiTrx:", error?.response?.data || error);
@@ -611,14 +609,12 @@ controllerX.getme = async (req, res) => {
 controllerX.logoutApp = async (req, res) => {
   var app = "app:" + req.body.uuid;
   try {
-
-  
     const req = await api.post("/reseller/logout-app", {
       sender: app,
       appId: app,
     });
 
-    return res.json( {success: true,msg: "Logout Success" })
+    return res.json({ success: true, msg: "Logout Success" });
   } catch (error) {
     console.error("Logout error:", error?.response || error);
     res.json({ success: false, msg: "Logout Gagal" });
