@@ -2,10 +2,10 @@ var express = require("express");
 var router = express.Router();
 
 router.get("/", (req, res) => {
-  res.render("index");
+
+  res.json({ok: true, msg: "api is running"})
+  // res.render("index");
 });
-router.get("/login", (req, res) => {
-  res.render("login");
-});
+
 
 module.exports = router;

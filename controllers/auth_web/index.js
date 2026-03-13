@@ -97,6 +97,8 @@ const sendPush = async (req, res) => {
         title: toStr(title),
         pesan: toStr(pesan),
 
+        screen: toStr(page, 'detailtrx'),
+
         trxId: toStr(trxId),
         invoiceId: toStr(invoiceId),
         status: toStr(status),
@@ -177,9 +179,7 @@ const sendPush = async (req, res) => {
   }
 };
 
-module.exports = {
-  sendPush,
-};
+
 
 const key = process.env.SECRET; // Key for cryptograpy. Keep it secret
 
