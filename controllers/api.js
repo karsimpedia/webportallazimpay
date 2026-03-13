@@ -607,17 +607,34 @@ controllerX.getme = async (req, res) => {
 };
 
 controllerX.logoutApp = async (req, res) => {
-  var app = "app:" + req.body.uuid;
+  const app = "app:" + req.body.uuid;
+
   try {
-    const req = await api.post("/reseller/logout-app", {
+    await api.post("/reseller/logout-app", {
       sender: app,
       appId: app,
     });
 
-    return res.json({ success: true, msg: "Logout Success" });
+    await prisma.fcmDevice.deleteMany({
+      where: {
+        appid: app,
+      },
+    });
+
+    return res.json({
+      success: true,
+      msg: "Logout Success",
+    });
   } catch (error) {
-    console.error("Logout error:", error?.response || error);
-    res.json({ success: false, msg: "Logout Gagal" });
+    console.error(
+      "Logout error:",
+      error?.response?.data || error.message || error,
+    );
+
+    return res.json({
+      success: false,
+      msg: "Logout Gagal",
+    });
   }
 };
 

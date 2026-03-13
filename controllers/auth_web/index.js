@@ -96,9 +96,7 @@ const sendPush = async (req, res) => {
         page: toStr(page, "detail"),
         title: toStr(title),
         pesan: toStr(pesan),
-
         screen: toStr(page, 'detailtrx'),
-
         trxId: toStr(trxId),
         invoiceId: toStr(invoiceId),
         status: toStr(status),
