@@ -314,8 +314,8 @@ exports.getReceiptByTransaction = async (req, res) => {
     const categoryCode = trx.product?.category?.code?.toUpperCase();
     const tpl = await getTemplateWithFallback(productCode, categoryCode);
 
-    let jl = Number(jasaloket || 3000);
-    if (Number.isNaN(jl)) jl = 3000;
+    let jl = Number(jasaloket || 4000);
+    if (Number.isNaN(jl)) jl = 4000;
 
     const amountDueNum = Number(trx.amountDue || 0);
     const adminFeeNum = Number(trx.adminFee || 0);
