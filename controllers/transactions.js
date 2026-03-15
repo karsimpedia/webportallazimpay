@@ -24,7 +24,9 @@ function mapStatusToLegacy(data = {}) {
   let msg = String(data.message || data.msg || "").trim();
 
   if (
-    ["TAGIHAN_INQUIRY", "EWALLET_INQUIRY", "TRANSFER_BANK_INQUIRY"].includes(typeTrx) &&
+    ["TAGIHAN_INQUIRY", "EWALLET_INQUIRY", "TRANSFER_BANK_INQUIRY"].includes(
+      typeTrx,
+    ) &&
     status === "WAITING"
   ) {
     msg = [
@@ -72,13 +74,13 @@ function mapStatusToLegacy(data = {}) {
     ];
 
     const shouldHideMsg = hiddenErrorKeywords.some((keyword) =>
-      lowerMsg.includes(keyword)
+      lowerMsg.includes(keyword),
     );
 
     return {
       success: false,
       rc: data.rc || "2",
-      msg: shouldHideMsg ? "Transaksi Gagal" : (msg || "Transaksi Gagal"),
+      msg: shouldHideMsg ? "Transaksi Gagal" : msg || "Transaksi Gagal",
     };
   }
 

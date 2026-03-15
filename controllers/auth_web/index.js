@@ -96,7 +96,7 @@ const sendPush = async (req, res) => {
         page: toStr(page, "detail"),
         title: toStr(title),
         pesan: toStr(pesan),
-        screen: toStr(page, 'detailtrx'),
+        screen: toStr(page, "detailtrx"),
         trxId: toStr(trxId),
         invoiceId: toStr(invoiceId),
         status: toStr(status),
@@ -124,9 +124,9 @@ const sendPush = async (req, res) => {
       tokens,
     };
 
-    const response = await admin.messaging().sendEachForMulticast(
-      messagePayload
-    );
+    const response = await admin
+      .messaging()
+      .sendEachForMulticast(messagePayload);
 
     const invalidCodes = [
       "messaging/invalid-registration-token",
@@ -173,6 +173,207 @@ const sendPush = async (req, res) => {
     return res.status(500).json({
       success: false,
       msg: error?.message || "Error sending message",
+    });
+  }
+};
+
+const chunkArray = (arr = [], size = 500) => {
+  const result = [];
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size));
+  }
+  return result;
+};
+
+const sendBroadcastNotification = async (req, res) => {
+  try {
+    const body = {
+      ...(req.query || {}),
+      ...(req.body || {}),
+    };
+
+    const {
+      title,
+      pesan,
+      image = "",
+      target = "all", // all | appid
+      appids = [],
+
+      page = "homepage",
+      trxId = "",
+      invoiceId = "",
+      status = "",
+      msisdn = "",
+      productCode = "",
+      resellerId = "",
+      sender = "",
+      sn = "",
+      amount = "",
+      openAmount = "",
+      amountDue = "",
+      supplierPrice = "",
+      message = "",
+      createdAt = "",
+    } = body;
+
+    if (!title || !pesan) {
+      return res.status(400).json({
+        success: false,
+        msg: "title dan pesan wajib diisi",
+      });
+    }
+
+    let where = {};
+
+    if (target === "appid") {
+      const cleanAppids = Array.isArray(appids)
+        ? appids.map((x) => toStr(x).trim()).filter(Boolean)
+        : [];
+
+      if (!cleanAppids.length) {
+        return res.status(400).json({
+          success: false,
+          msg: "appids wajib diisi jika target=appid",
+        });
+      }
+
+      where.appid = {
+        in: cleanAppids,
+      };
+    }
+
+    const devices = await prisma.fcmDevice.findMany({
+      where,
+      select: {
+        id: true,
+        appid: true,
+        regtoken: true,
+        deviceId: true,
+      },
+    });
+
+    if (!devices.length) {
+      return res.status(404).json({
+        success: false,
+        msg: "Device tidak ditemukan",
+      });
+    }
+
+    const tokens = [...new Set(devices.map((d) => d.regtoken).filter(Boolean))];
+
+    if (!tokens.length) {
+      return res.status(404).json({
+        success: false,
+        msg: "Token kosong",
+      });
+    }
+
+    const imageUrl = toStr(image).trim();
+    const tokenChunks = chunkArray(tokens, 500);
+
+    let totalSuccess = 0;
+    let totalFailed = 0;
+    let invalidTokens = [];
+
+    for (const tokenChunk of tokenChunks) {
+      const messagePayload = {
+        notification: {
+          title: toStr(title),
+          body: toStr(pesan),
+          ...(imageUrl ? { imageUrl } : {}),
+        },
+        data: {
+          page: toStr(page, "homepage"),
+          title: toStr(title),
+          pesan: toStr(pesan),
+          body: toStr(pesan),
+          screen: toStr(page, "homepage"),
+
+          trxId: toStr(trxId),
+          invoiceId: toStr(invoiceId),
+          status: toStr(status),
+          msisdn: toStr(msisdn),
+          productCode: toStr(productCode),
+          resellerId: toStr(resellerId),
+          sender: toStr(sender),
+          sn: toStr(sn),
+          amount: toStr(amount),
+          openAmount: toStr(openAmount),
+          amountDue: toStr(amountDue),
+          supplierPrice: toStr(supplierPrice),
+          message: toStr(message),
+          createdAt: toStr(createdAt),
+
+          ...(imageUrl ? { image: imageUrl } : {}),
+        },
+        android: {
+          priority: "high",
+          notification: {
+            channelId: "default",
+            ...(imageUrl ? { imageUrl } : {}),
+          },
+        },
+        tokens: tokenChunk,
+      };
+
+      const response = await admin
+        .messaging()
+        .sendEachForMulticast(messagePayload);
+
+      totalSuccess += response.successCount;
+      totalFailed += response.failureCount;
+
+      const invalidCodes = [
+        "messaging/invalid-registration-token",
+        "messaging/registration-token-not-registered",
+      ];
+
+      const chunkInvalid = response.responses
+        .map((r, i) => {
+          if (!r.success && invalidCodes.includes(r.error?.code)) {
+            return tokenChunk[i];
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      invalidTokens.push(...chunkInvalid);
+    }
+
+    invalidTokens = [...new Set(invalidTokens)];
+
+    if (invalidTokens.length) {
+      await prisma.fcmDevice.deleteMany({
+        where: {
+          regtoken: {
+            in: invalidTokens,
+          },
+        },
+      });
+    }
+
+    return res.json({
+      success: true,
+      msg: "Broadcast notification berhasil dikirim",
+      target,
+      totalDevice: devices.length,
+      totalToken: tokens.length,
+      totalChunk: tokenChunks.length,
+      sent: totalSuccess,
+      failed: totalFailed,
+      invalidRemoved: invalidTokens.length,
+      sampleDataSent: {
+        title: toStr(title),
+        pesan: toStr(pesan),
+        page: toStr(page),
+        image: imageUrl,
+      },
+    });
+  } catch (error) {
+    console.error("Broadcast FCM error:", error);
+    return res.status(500).json({
+      success: false,
+      msg: error?.message || "Error sending broadcast notification",
     });
   }
 };
@@ -503,10 +704,9 @@ const otpVerifyV2 = async (req, res) => {
         type: "PHONE",
       });
 
-      
       let idreseller = login.data.resellerId;
-      let resellerName = login.data.resellerName
-      let referralCode = login.data.referralCode
+      let resellerName = login.data.resellerName;
+      let referralCode = login.data.referralCode;
       if (login.data.success) {
         var uuid = "app:" + uuidencoded;
         let cekdata = await api.post("/reseller/check-deviceid", {
@@ -516,7 +716,6 @@ const otpVerifyV2 = async (req, res) => {
           type: "APP",
         });
 
-      
         if (!cekdata.data.registered) {
           let addDevice = await api.post("/reseller/add-deviceid", {
             sender: phone,
@@ -985,5 +1184,7 @@ module.exports = {
   forgotPinVerifyOtp,
   forgotPinFinal,
   callBackLinqu,
-  sendPush,
+  sendPush, 
+  sendBroadcastNotification,
+
 };

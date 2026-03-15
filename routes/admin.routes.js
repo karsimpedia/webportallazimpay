@@ -9,6 +9,11 @@ const contact = require("../controllers/admin.contact.controller");
 const running = require("../controllers/admin.runningtext.controller");
 const favoritMenu = require("../controllers/admin.favoriteMenu.controller");
 const auth = require("../controllers/admin.auth.controller");
+const {
+  sendBroadcastNotification,
+} = require("../controllers/auth_web");
+
+// middleware adminAuth sesuaikan dengan project kamu
 
 const ctrl = require("../controllers/receiptTemplate.controller");
 const { verifyAdmin, requireSuperAdmin } = require("../middlewares/adminAuth");
@@ -20,16 +25,11 @@ router.get("/me", verifyAdmin, auth.me);
 router.post("/", verifyAdmin, requireSuperAdmin, auth.create);
 router.post("/change-password", verifyAdmin, auth.changePassword);
 router.patch("/:id/toggle", verifyAdmin, requireSuperAdmin, auth.toggleActive);
-
+router.post("/broadcast-notification", verifyAdmin, sendBroadcastNotification);
 router.get("/receipt/:trxId", ctrl.getReceiptByTransaction);
 router.post("/receipt", ctrl.getReceiptByTransaction);
 const otpController = require("../controllers/adminOtp.controller");
 router.use(verifyAdmin);
-
-
-
-
-
 //otp CRUD
 
 router.get("/otp-setting", otpController.listOtp);
