@@ -14,19 +14,17 @@ function mapStatusToLegacy(data = {}) {
   const status = String(data.status || "").toUpperCase();
 
   const name = data.customerName ?? data.extra?.customerNo ?? "";
-
   const tagihan = data.amountDue ?? 0;
   const admin = data.adminFee ?? 0;
   const totalTag = data.sellingPrice ?? 0;
   const harga = data.sellPrice ?? 0;
   const dest = data.msisdn ?? "";
   const typeTrx = data.type;
-  let msg = data.message || data.msg || "";
+
+  let msg = String(data.message || data.msg || "").trim();
 
   if (
-    ["TAGIHAN_INQUIRY", "EWALLET_INQUIRY", "TRANSFER_BANK_INQUIRY"].includes(
-      typeTrx,
-    ) &&
+    ["TAGIHAN_INQUIRY", "EWALLET_INQUIRY", "TRANSFER_BANK_INQUIRY"].includes(typeTrx) &&
     status === "WAITING"
   ) {
     msg = [
@@ -50,10 +48,37 @@ function mapStatusToLegacy(data = {}) {
   }
 
   if (status === "FAILED") {
+    const lowerMsg = msg.toLowerCase();
+
+    const hiddenErrorKeywords = [
+      "saldo",
+      "balance",
+      "insufficient",
+      "not enough balance",
+      "provider balance",
+      "deposit",
+      "cut off",
+      "gateway error",
+      "internal error",
+      "timeout",
+      "auth failed",
+      "signature invalid",
+      "forbidden",
+      "unauthorized",
+      "sql",
+      "database",
+      "exception",
+      "server error",
+    ];
+
+    const shouldHideMsg = hiddenErrorKeywords.some((keyword) =>
+      lowerMsg.includes(keyword)
+    );
+
     return {
       success: false,
       rc: data.rc || "2",
-      msg: "Transaksi gagal",
+      msg: shouldHideMsg ? "Transaksi Gagal" : (msg || "Transaksi Gagal"),
     };
   }
 
@@ -106,8 +131,7 @@ TransactionController.payNow = async (req, res) => {
     nominal,
   } = req.body;
 
-
-  console.log(req.body)
+  console.log(req.body);
   // ✅ PARSING TUJUAN + NOMINAL
   const { msisdn, nominal: parsedNominal } = parseTujuanWithNominal(
     tujuan,
@@ -163,27 +187,22 @@ TransactionController.payNow = async (req, res) => {
 };
 
 TransactionController.hapusAkun = async (req, res) => {
-
   try {
     const uuid = "app:" + req.body.uuid;
 
-    const apiRes = await api.delete(
-      "/reseller/delete_me",
-      {
-        data: {
-          sender: uuid,
-          pin: req.body.pin,
-        },
+    const apiRes = await api.delete("/reseller/delete_me", {
+      data: {
+        sender: uuid,
+        pin: req.body.pin,
       },
-     
-    );
+    });
 
     return res.json({ success: true, msg: "akun berhasil dihapus" });
   } catch (error) {
     console.error("proxy DeleteAKun:", error?.response?.data || error);
     return res.json({
       success: false,
-      msg: error?.response?.data.message || "Gagal hapus akun"
+      msg: error?.response?.data.message || "Gagal hapus akun",
     });
   }
 };
