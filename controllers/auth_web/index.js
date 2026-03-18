@@ -251,7 +251,7 @@ const sendBroadcastNotification = async (req, res) => {
         deviceId: true,
       },
     });
-
+console.log(devices)
     if (!devices.length) {
       return res.status(404).json({
         success: false,
