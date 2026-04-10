@@ -183,7 +183,7 @@ TransactionController.payNow = async (req, res) => {
       tujuan: msisdn,
       reffid: idtrx,
       rc: "99",
-      msg: error?.response?.data?.error || "Gagal menghubungi server utama",
+      msg: error?.response?.data?.error || "Under Proses,  Cek mutasi dan history Transaksi",
     });
   }
 };
