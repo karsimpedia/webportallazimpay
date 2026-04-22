@@ -38,6 +38,7 @@ exports.updateFavoriteMenu = async (req, res) => {
       jenis,
       img,
       icon,
+       kodeProduk,
       filter = false,
       openDenom = false,
       operatorCodes = [],
@@ -61,7 +62,7 @@ exports.updateFavoriteMenu = async (req, res) => {
           openDenom,
           sortOrder,
           isActive,
-
+          kodeProduk,
           operators: {
             deleteMany: {}, // reset relasi
             create: codes.map((code) => ({
@@ -94,6 +95,7 @@ exports.createFavoriteMenu = async (req, res) => {
       jenis,
       img,
       icon,
+      kodeProduk,
       filter = false,
       openDenom = false,
       operatorCodes = [],
@@ -120,6 +122,7 @@ exports.createFavoriteMenu = async (req, res) => {
         filter,
         openDenom,
         sortOrder,
+        kodeProduk,
         isActive: true,
 
         operators: {
