@@ -136,7 +136,7 @@ model Banner {
   id     Int    @id @default(autoincrement())
   title  String
   imgUrl String
-
+  url       String?
   isActive  Boolean @default(true)
   sortOrder Int     @default(0)
 
@@ -271,3 +271,26 @@ model OtpApiSetting {
   updatedAt DateTime @updatedAt
 }
 
+model BlogCategory {
+  id        Int           @id @default(autoincrement())
+  name      String
+  slug      String        @unique
+  articles  BlogArticle[]
+  createdAt DateTime      @default(now())
+}
+
+model BlogArticle {
+  id          Int            @id @default(autoincrement())
+  title       String
+  slug        String         @unique
+  excerpt     String?        @db.Text
+  content     String         @db.Text
+  thumbnail   String?
+  author      String?
+  isPublished Boolean        @default(false)
+  publishedAt DateTime?
+  categoryId  Int?
+  category    BlogCategory?  @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}

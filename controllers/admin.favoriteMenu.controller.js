@@ -38,7 +38,7 @@ exports.updateFavoriteMenu = async (req, res) => {
       jenis,
       img,
       icon,
-       kodeProduk,
+      kodeProduk,
       filter = false,
       openDenom = false,
       operatorCodes = [],

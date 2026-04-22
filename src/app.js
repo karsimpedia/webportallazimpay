@@ -13,6 +13,9 @@ const authIrs = require("../middlewares/authIrs");
 const authJwt = require("../middlewares/authJwt");
 const notFound = require("../middlewares/notFound");
 const errorHandler = require("../middlewares/errorHandler");
+const blogCategoryRoutes = require("../routes/blog/blogCategory.routes");
+const blogArticleRoutes = require("../routes/blog/blogArticle.routes");
+
 
 // routes
 const viewRoutes = require("../routes/view");
@@ -50,6 +53,8 @@ app.use("/api", apiWeb);
 
 app.use("/apk", apk);
 app.use("/admin", admin);
+app.use("/blog/categories", blogCategoryRoutes);
+app.use("/blog/articles", blogArticleRoutes);
 // 🔐 INTERNAL / H2H
 
 app.use("/trx", authJwt, trxRoutes);
