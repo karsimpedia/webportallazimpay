@@ -38,6 +38,7 @@ const getHomeApk = async (req, res) => {
           select: {
             id: true,
             title: true,
+            url:true,
             imgUrl: true,
             sortOrder: true,
           },
@@ -67,7 +68,7 @@ const getHomeApk = async (req, res) => {
       ]);
 
 
-       console.log(favoriteMenu)
+      //  console.log(favoriteMenu)
     res.json({
       menu: menu.map((m) => ({
         id: m.id,
