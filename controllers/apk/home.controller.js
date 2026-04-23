@@ -97,6 +97,7 @@ const getHomeApk = async (req, res) => {
       banner: banner.map((m) => ({
         id: m.id,
         sortOrder: m.sortOrder,
+        url: m.url,
         title: m.title,
         imgurl: m.imgUrl,
       })),
