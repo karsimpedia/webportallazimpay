@@ -9,6 +9,7 @@ exports.getBanner = async (req, res) => {
       select: {
         id: true,
         title: true,
+        url: true,
         imgUrl: true,
         sortOrder: true,
         isActive: true,
@@ -37,8 +38,6 @@ exports.getBannerByid = async (req, res) => {
 
     const banners = await prisma.banner.findUnique({
       where: { id },
-      
-      
     });
 
     return res.json({
@@ -56,14 +55,14 @@ exports.getBannerByid = async (req, res) => {
 
 exports.createBanner = async (req, res) => {
   try {
-    const { title, imgUrl, sortOrder = 0 } = req.body;
+    const { title, imgUrl, url, sortOrder = 0 } = req.body;
 
     if (!title || !imgUrl) {
       return res.status(400).json({ error: "title & imgUrl wajib" });
     }
 
     const banner = await prisma.banner.create({
-      data: { title, imgUrl, sortOrder },
+      data: { title, imgUrl, url, sortOrder },
     });
 
     res.json({ success: true, banner });
@@ -77,11 +76,11 @@ exports.createBanner = async (req, res) => {
 exports.updateBanner = async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const { title, imgUrl, sortOrder, isActive } = req.body;
+    const { title, imgUrl, url, sortOrder, isActive } = req.body;
 
     const banner = await prisma.banner.update({
       where: { id },
-      data: { title, imgUrl, sortOrder, isActive },
+      data: { title, imgUrl, sortOrder, url, isActive },
     });
 
     res.json({ success: true, banner });
