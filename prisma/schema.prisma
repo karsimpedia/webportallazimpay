@@ -280,17 +280,21 @@ model BlogCategory {
 }
 
 model BlogArticle {
-  id          Int            @id @default(autoincrement())
-  title       String
-  slug        String         @unique
-  excerpt     String?        @db.Text
-  content     String         @db.Text
-  thumbnail   String?
-  author      String?
-  isPublished Boolean        @default(false)
-  publishedAt DateTime?
-  categoryId  Int?
-  category    BlogCategory?  @relation(fields: [categoryId], references: [id])
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id              Int           @id @default(autoincrement())
+  title           String
+  slug            String        @unique
+  excerpt         String?       @db.Text
+  content         String        @db.Text
+  thumbnail       String?
+  author          String?
+  isPublished     Boolean       @default(false)
+  publishedAt     DateTime?
+  categoryId      Int?
+  category        BlogCategory? @relation(fields: [categoryId], references: [id])
+
+  seoTitle        String?       @db.VarChar(160)
+  metaDescription String?       @db.VarChar(320)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }

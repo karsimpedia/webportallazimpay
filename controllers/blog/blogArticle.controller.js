@@ -41,6 +41,8 @@ exports.createArticle = async (req, res) => {
       isPublished,
       publishedAt,
       categoryId,
+      seoTitle,
+      metaDescription,
     } = req.body;
 
     if (!title || !content) {
@@ -88,6 +90,8 @@ exports.createArticle = async (req, res) => {
             : new Date()
           : null,
         categoryId: categoryId ? parseInt(categoryId, 10) : null,
+        seoTitle: seoTitle ? String(seoTitle).trim() : null,
+        metaDescription: metaDescription ? String(metaDescription).trim() : null,
       },
       include: {
         category: true,
@@ -131,6 +135,13 @@ exports.getAllArticles = async (req, res) => {
                 { excerpt: { contains: String(search), mode: "insensitive" } },
                 { content: { contains: String(search), mode: "insensitive" } },
                 { author: { contains: String(search), mode: "insensitive" } },
+                { seoTitle: { contains: String(search), mode: "insensitive" } },
+                {
+                  metaDescription: {
+                    contains: String(search),
+                    mode: "insensitive",
+                  },
+                },
               ],
             }
           : {},
@@ -139,9 +150,7 @@ exports.getAllArticles = async (req, res) => {
           : published === "false"
           ? { isPublished: false }
           : {},
-        categoryId
-          ? { categoryId: parseInt(categoryId, 10) }
-          : {},
+        categoryId ? { categoryId: parseInt(categoryId, 10) } : {},
       ],
     };
 
@@ -199,6 +208,13 @@ exports.getPublishedArticles = async (req, res) => {
               { excerpt: { contains: String(search), mode: "insensitive" } },
               { content: { contains: String(search), mode: "insensitive" } },
               { author: { contains: String(search), mode: "insensitive" } },
+              { seoTitle: { contains: String(search), mode: "insensitive" } },
+              {
+                metaDescription: {
+                  contains: String(search),
+                  mode: "insensitive",
+                },
+              },
             ],
           }
         : {}),
@@ -321,6 +337,8 @@ exports.updateArticle = async (req, res) => {
       isPublished,
       publishedAt,
       categoryId,
+      seoTitle,
+      metaDescription,
     } = req.body;
 
     const existing = await prisma.blogArticle.findUnique({
@@ -393,6 +411,18 @@ exports.updateArticle = async (req, res) => {
             : categoryId === null || categoryId === ""
             ? null
             : parseInt(categoryId, 10),
+        seoTitle:
+          seoTitle !== undefined
+            ? seoTitle
+              ? String(seoTitle).trim()
+              : null
+            : existing.seoTitle,
+        metaDescription:
+          metaDescription !== undefined
+            ? metaDescription
+              ? String(metaDescription).trim()
+              : null
+            : existing.metaDescription,
       },
       include: {
         category: true,

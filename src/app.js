@@ -15,7 +15,7 @@ const notFound = require("../middlewares/notFound");
 const errorHandler = require("../middlewares/errorHandler");
 const blogCategoryRoutes = require("../routes/blog/blogCategory.routes");
 const blogArticleRoutes = require("../routes/blog/blogArticle.routes");
-
+const uploadImage = require("../routes/blog/uploadImage");
 
 // routes
 const viewRoutes = require("../routes/view");
@@ -25,7 +25,7 @@ const apk = require("../routes/apk");
 const admin = require("../routes/admin.routes");
 
 const app = express();
-
+app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
 // ================= HARDENING =================
 app.disable("x-powered-by");
 app.use(responseTime());
@@ -55,6 +55,7 @@ app.use("/apk", apk);
 app.use("/admin", admin);
 app.use("/blog/categories", blogCategoryRoutes);
 app.use("/blog/articles", blogArticleRoutes);
+app.use("/blog/upload-image", uploadImage);
 // 🔐 INTERNAL / H2H
 
 app.use("/trx", authJwt, trxRoutes);
