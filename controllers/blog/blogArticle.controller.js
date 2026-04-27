@@ -218,12 +218,14 @@ exports.getAllArticles = async (req, res) => {
   }
 };
 
+
+
 exports.getPublishedArticles = async (req, res) => {
   try {
     const { search = "", categorySlug, page = 1, limit = 10 } = req.query;
 
     const pageNum = Math.max(parseInt(page, 10) || 1, 1);
-    const limitNum = Math.max(parseInt(limit, 10) || 10, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 50);
     const skip = (pageNum - 1) * limitNum;
 
     const where = {
@@ -233,7 +235,10 @@ exports.getPublishedArticles = async (req, res) => {
             OR: [
               { title: { contains: String(search), mode: "insensitive" } },
               { excerpt: { contains: String(search), mode: "insensitive" } },
+
+              // content tetap boleh dicari, tapi tidak dikirim ke response list
               { content: { contains: String(search), mode: "insensitive" } },
+
               { author: { contains: String(search), mode: "insensitive" } },
               { seoTitle: { contains: String(search), mode: "insensitive" } },
               {
@@ -257,13 +262,34 @@ exports.getPublishedArticles = async (req, res) => {
     const [data, total] = await Promise.all([
       prisma.blogArticle.findMany({
         where,
-        include: {
-          category: true,
+
+        // PENTING: jangan kirim content di halaman list
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          thumbnail: true,
+          author: true,
+          isPublished: true,
+          publishedAt: true,
+          createdAt: true,
+          seoTitle: true,
+          metaDescription: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
         },
+
         orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
         skip,
         take: limitNum,
       }),
+
       prisma.blogArticle.count({ where }),
     ]);
 
