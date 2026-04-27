@@ -3,6 +3,11 @@
 push.sh
 update.sh
 /ssl
+/public/uploads/*
+!/public/uploads/.gitkeep
+!/public/uploads/blog/
+!/public/uploads/blog/.gitkeep
+
 
 firebase-adminsdk-*.json
 lazimpay-profesional-firebase-adminsdk-*.json

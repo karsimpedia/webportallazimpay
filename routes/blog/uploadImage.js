@@ -23,7 +23,56 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post("/", upload.single("file"), async (req, res) => {
+
+
+router.delete("/delete", async (req, res) => {
+  try {
+    const { url } = req.body;
+
+    if (!url) {
+      return res.status(400).json({
+        success: false,
+        message: "URL gambar wajib dikirim",
+      });
+    }
+
+    // hanya izinkan file dari /uploads/blog/
+    if (!String(url).startsWith("/uploads/blog/")) {
+      return res.status(400).json({
+        success: false,
+        message: "Path gambar tidak valid",
+      });
+    }
+
+    const filename = path.basename(url);
+    const filePath = path.join(uploadDir, filename);
+
+    // cegah path traversal
+    if (!filePath.startsWith(uploadDir)) {
+      return res.status(400).json({
+        success: false,
+        message: "Path file tidak valid",
+      });
+    }
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    return res.json({
+      success: true,
+      message: "Gambar berhasil dihapus",
+    });
+  } catch (error) {
+    console.error("delete image error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Gagal menghapus gambar",
+    });
+  }
+});
+
+router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({

@@ -55,7 +55,7 @@ app.use("/apk", apk);
 app.use("/admin", admin);
 app.use("/blog/categories", blogCategoryRoutes);
 app.use("/blog/articles", blogArticleRoutes);
-app.use("/blog/upload-image", uploadImage);
+app.use("/blog/image", uploadImage);
 // 🔐 INTERNAL / H2H
 
 app.use("/trx", authJwt, trxRoutes);

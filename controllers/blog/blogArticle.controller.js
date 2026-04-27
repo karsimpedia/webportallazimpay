@@ -1,3 +1,5 @@
+"use strict";
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
@@ -8,6 +10,38 @@ function slugify(text = "") {
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/--+/g, "-");
+}
+
+function normalizeThumbnail(input) {
+  if (!input) return null;
+
+  const value = String(input).trim();
+
+  if (!value) return null;
+
+  // Tolak base64 agar DB tidak bengkak
+  if (value.startsWith("data:image/")) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value);
+
+    // Kalau localhost/private URL, simpan path saja
+    if (
+      url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1" ||
+      url.hostname === "::1"
+    ) {
+      return url.pathname;
+    }
+
+    // Kalau domain production, boleh disimpan full URL
+    return value;
+  } catch {
+    // Kalau path biasa
+    return value.startsWith("/") ? value : `/${value}`;
+  }
 }
 
 async function generateUniqueArticleSlug(title, currentId = null) {
@@ -24,6 +58,7 @@ async function generateUniqueArticleSlug(title, currentId = null) {
     });
 
     if (!existing) return slug;
+
     slug = `${baseSlug}-${counter}`;
     counter++;
   }
@@ -75,16 +110,19 @@ exports.createArticle = async (req, res) => {
       finalSlug = await generateUniqueArticleSlug(title);
     }
 
+    const publishStatus =
+      isPublished === true || isPublished === "true" || isPublished === 1 || isPublished === "1";
+
     const data = await prisma.blogArticle.create({
       data: {
         title: String(title).trim(),
         slug: finalSlug,
         excerpt: excerpt || null,
         content: String(content),
-        thumbnail: thumbnail || null,
+        thumbnail: normalizeThumbnail(thumbnail),
         author: author || null,
-        isPublished: Boolean(isPublished),
-        publishedAt: Boolean(isPublished)
+        isPublished: publishStatus,
+        publishedAt: publishStatus
           ? publishedAt
             ? new Date(publishedAt)
             : new Date()
@@ -114,13 +152,7 @@ exports.createArticle = async (req, res) => {
 
 exports.getAllArticles = async (req, res) => {
   try {
-    const {
-      search = "",
-      published,
-      categoryId,
-      page = 1,
-      limit = 10,
-    } = req.query;
+    const { search = "", published, categoryId, page = 1, limit = 10 } = req.query;
 
     const pageNum = Math.max(parseInt(page, 10) || 1, 1);
     const limitNum = Math.max(parseInt(limit, 10) || 10, 1);
@@ -188,12 +220,7 @@ exports.getAllArticles = async (req, res) => {
 
 exports.getPublishedArticles = async (req, res) => {
   try {
-    const {
-      search = "",
-      categorySlug,
-      page = 1,
-      limit = 10,
-    } = req.query;
+    const { search = "", categorySlug, page = 1, limit = 10 } = req.query;
 
     const pageNum = Math.max(parseInt(page, 10) || 1, 1);
     const limitNum = Math.max(parseInt(limit, 10) || 10, 1);
@@ -327,6 +354,7 @@ exports.getArticleBySlug = async (req, res) => {
 exports.updateArticle = async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
+
     const {
       title,
       slug,
@@ -388,17 +416,26 @@ exports.updateArticle = async (req, res) => {
     }
 
     const nextPublished =
-      typeof isPublished === "boolean" ? isPublished : existing.isPublished;
+      typeof isPublished === "boolean"
+        ? isPublished
+        : isPublished === "true"
+        ? true
+        : isPublished === "false"
+        ? false
+        : existing.isPublished;
 
     const data = await prisma.blogArticle.update({
       where: { id },
       data: {
         title: title !== undefined ? String(title).trim() : existing.title,
         slug: finalSlug,
-        excerpt: excerpt !== undefined ? excerpt : existing.excerpt,
+        excerpt: excerpt !== undefined ? excerpt || null : existing.excerpt,
         content: content !== undefined ? String(content) : existing.content,
-        thumbnail: thumbnail !== undefined ? thumbnail : existing.thumbnail,
-        author: author !== undefined ? author : existing.author,
+        thumbnail:
+          thumbnail !== undefined
+            ? normalizeThumbnail(thumbnail)
+            : existing.thumbnail,
+        author: author !== undefined ? author || null : existing.author,
         isPublished: nextPublished,
         publishedAt: nextPublished
           ? publishedAt
