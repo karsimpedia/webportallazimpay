@@ -1105,68 +1105,139 @@ function generateUsername(base) {
 }
 
 const RegisterUSer = async (req, res) => {
-  // var uuid = "app:" + req.body.uuid;
-  var namatoko = req.body.namatoko;
-  var nohp = req.body.nohp;
-  var alamat = req.body.alamat;
-  var nama_pemilik = req.body.nama;
-  var pin = req.body.pin;
-  var pinconfirmasi = req.body.pinkonfirmasi;
-  // var email = req.body.email;
-
-  let ref = req.body.koderef || null;
-  let kodeReferral = ref ? ref.toUpperCase() : null;
-  const usernameAuto = generateUsername(nama_pemilik || namatoko);
-  // var upline_reg = req.body.upline;
-  let username = req.body.username || usernameAuto;
   try {
-    if (pin != pinconfirmasi) {
-      res.json({ success: false, msg: "Konfirmasi PIN Harus sama" });
-      return;
+    const namatoko = String(req.body.namatoko || "").trim();
+    const nohp = String(req.body.nohp || "").replace(/\D/g, "");
+    const alamat = String(req.body.alamat || "").trim();
+    const nama_pemilik = String(req.body.nama || "").trim();
+    const pin = String(req.body.pin || "").replace(/\D/g, "");
+    const pinconfirmasi = String(req.body.pinkonfirmasi || "").replace(/\D/g, "");
+    const email = req.body.email
+      ? String(req.body.email).trim().toLowerCase()
+      : null;
+
+    const ref = req.body.koderef || null;
+    const kodeReferral = ref ? String(ref).trim().toUpperCase() : null;
+
+    const usernameAuto = generateUsername(nama_pemilik || namatoko);
+    const username = String(req.body.username || usernameAuto)
+      .replace(/\s/g, "")
+      .toLowerCase()
+      .trim();
+
+    const password = req.body.password || "123456";
+
+    if (!namatoko) {
+      return res.json({ success: false, msg: "Nama toko wajib diisi" });
+    }
+
+    if (!nama_pemilik) {
+      return res.json({ success: false, msg: "Nama pemilik wajib diisi" });
+    }
+
+    if (!nohp) {
+      return res.json({ success: false, msg: "No HP wajib diisi" });
+    }
+
+    if (!username) {
+      return res.json({ success: false, msg: "Username wajib diisi" });
+    }
+
+    if (!password) {
+      return res.json({ success: false, msg: "Password wajib diisi" });
+    }
+
+    if (!pin) {
+      return res.json({ success: false, msg: "PIN wajib diisi" });
+    }
+
+    if (pin !== pinconfirmasi) {
+      return res.json({
+        success: false,
+        msg: "Konfirmasi PIN harus sama",
+      });
+    }
+
+    if (pin.length < 6) {
+      return res.json({
+        success: false,
+        msg: "PIN minimal 6 digit",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.json({
+        success: false,
+        msg: "Password minimal 6 karakter",
+      });
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.json({
+        success: false,
+        msg: "Format email tidak valid",
+      });
     }
 
     const datareg = {
       name: nama_pemilik,
       storeName: namatoko,
-      username: username,
-      password: req.body.password || "123456",
+      username,
+      password,
       referralCode: kodeReferral,
-      pin: pin,
+      pin,
       phonenumber: nohp,
       address: alamat,
+      email,
     };
 
-    let regis = true;
     let reqRes;
+
     try {
-      reqRes = await api.post("reseller/register", {
-        ...datareg,
-        sender: nohp,
-      });
+      reqRes = await api.post("reseller/register", datareg);
     } catch (error) {
-      console.log(error);
-      regis = false;
-    }
-    if (regis) {
-      var datars = {
-        idreseller: reqRes.data.reseller.id,
-        idupline: reqRes.data.reseller.parentId,
-        namareseller: reqRes.data.reseller.storeName,
-        alamatreseller: reqRes.data.reseller.address,
-        namapemilik: reqRes.data.reseller.name,
-        username: username,
-        alias: reqRes.data.reseller.referralCode,
-      };
+      console.log("REGISTER API UTAMA ERROR:", error?.response?.data || error.message);
 
-      res.json({ success: true, msg: "registrasi berhasil", datareg: datars });
-      return;
+      return res.json({
+        success: false,
+        msg:
+          error?.response?.data?.error ||
+          error?.response?.data?.msg ||
+          "Registrasi gagal",
+      });
     }
 
-    res.json({ success: true, msg: "registrasi Gagal " });
+    const reseller = reqRes?.data?.reseller;
+
+    if (!reseller) {
+      return res.json({
+        success: false,
+        msg: "Registrasi gagal, response reseller tidak valid",
+      });
+    }
+
+    const datars = {
+      idreseller: reseller.id,
+      idupline: reseller.parentId || null,
+      namareseller: reseller.storeName,
+      alamatreseller: reseller.address,
+      namapemilik: reseller.name,
+      username,
+      alias: reseller.referralCode,
+      email,
+    };
+
+    return res.json({
+      success: true,
+      msg: "Registrasi berhasil",
+      datareg: datars,
+    });
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, msg: "registrasi error" });
-    return;
+    console.log("REGISTER PROXY ERROR:", error);
+    return res.json({
+      success: false,
+      msg: "Registrasi error",
+    });
   }
 };
 
